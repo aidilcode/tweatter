@@ -3,23 +3,32 @@
     <div class="user-avatar">
       <div class="user-wrapper">
         <div class="img">
-          <img
-            :src="authorAvatar"
-            alt=""
-            width="30"
-            height="30"
-          />
+          <img :src="authorAvatar" alt="" width="30" height="30" />
         </div>
         <span class="author font-medium">{{ author }}</span>
       </div>
-      <span class="more"><FeatherMoreHorizontal /></span>
+      <div
+        class="dropdown"
+        @click="moreOption(tweatId)"
+        :id="tweatId"
+        style="float: right"
+      >
+        <button class="dropbtn">
+          <FeatherMoreHorizontal />
+        </button>
+        <div class="dropdown-content" :id="'ddb-' + tweatId">
+          <div>edit tweat</div>
+          <div @click="deleteTweat(tweatId)">delete tweat</div>
+          <div>archive tweat</div>
+        </div>
+      </div>
     </div>
     <div class="content">
       <div class="content-body">
         {{ tweat }}
       </div>
       <div v-if="pictureUrl" class="content-image">
-        <img :src="pictureUrl" alt="" srcset="">
+        <img :src="pictureUrl" alt="" srcset="" />
       </div>
       <div class="content-repr">
         <div class="comments">
@@ -46,17 +55,23 @@
 
 
 <script>
-import FeatherMoreHorizontal from '../svgs/FeatherMoreHorizontal'
-import FeatherComments from '../svgs/FeatherComments'
-import FeatherHeart from '../svgs/FeatherHeart'
-import FeatherShare from '../svgs/FeatherShare'
+import axios from "axios";
+
+import FeatherMoreHorizontal from "../svgs/FeatherMoreHorizontal";
+import FeatherComments from "../svgs/FeatherComments";
+import FeatherHeart from "../svgs/FeatherHeart";
+import FeatherShare from "../svgs/FeatherShare";
 
 export default {
   name: "TweatItems",
   components: {
-    FeatherMoreHorizontal, FeatherComments, FeatherHeart, FeatherShare
+    FeatherMoreHorizontal,
+    FeatherComments,
+    FeatherHeart,
+    FeatherShare,
   },
   props: {
+    tweatId: String,
     author: {
       type: String,
       required: true,
@@ -70,17 +85,42 @@ export default {
       required: true,
     },
     pictureUrl: {
-      type: String,
+      type: [Object, String],
       required: true,
     },
     createdAt: {
       type: String,
       required: true,
     },
+    inUserView: Boolean,
   },
   methods: {
+    async deleteTweat(id) {
+      let access = localStorage.getItem("access_token");
+      await axios({
+        method: "DELETE",
+        url: `http://localhost:8000/api/tweat/${id}`,
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      }).catch((err) => {
+        if (err.response.status == 400) {
+          this.state.formError = true;
+        }
+      });
+
+      // console.log(id + " deleted")
+      this.$emit("deleted");
+    },
+
     favoriteTweat(id) {
       this.$emit("favorite", id);
+    },
+
+    moreOption(id) {
+      const DDbuttons = document.getElementById(`ddb-${id}`);
+      DDbuttons.classList.toggle("block")
     },
   },
 };
@@ -125,16 +165,46 @@ export default {
         }
       }
     }
-    .more {
+    svg {
+      stroke: #34d399;
+      cursor: pointer;
+    }
+    .dropbtn {
       padding: 0.25rem;
       border-radius: 20px;
+      border: none;
+      cursor: pointer;
       &:hover {
         background-color: rgb(52, 211, 153, 0.1);
       }
     }
-    svg {
-      stroke: #34D399;
-      cursor: pointer;
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .block {
+      display: block !important;
+    }
+    .dropdown-content {
+      border-radius: 3px;
+      display: none;
+      position: absolute;
+      top: 1.5rem;
+      right: 0;
+      background-color: #111;
+      border: 1px solid #222;
+      min-width: 160px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+      z-index: 99;
+      div {
+        color: #ccc;
+        padding: 12px 20px;
+        text-decoration: none;
+        display: block;
+        &:hover {
+          background-color: rgb(24, 24, 24);
+        }
+      }
     }
   }
   .content {
@@ -142,8 +212,8 @@ export default {
     .content-image {
       // min-width : 504px;
       // min-height: 433px;
-      max-width : 512px;
-      max-height: 433px;
+      max-width: 552px;
+      max-height: 493px;
       overflow: hidden;
       position: relative;
 
@@ -185,9 +255,9 @@ export default {
         margin-right: 6rem;
       }
       .comments:hover {
-        color: #34D399;
+        color: #34d399;
         svg {
-          stroke: #34D399;
+          stroke: #34d399;
         }
       }
       .like:hover {
@@ -197,9 +267,9 @@ export default {
         }
       }
       .share:hover {
-        color: #34D399;
+        color: #34d399;
         svg {
-          stroke: #34D399;
+          stroke: #34d399;
         }
       }
     }
