@@ -9,9 +9,10 @@
       </div>
     </header>
     <div class="tweat-form">
-      <TweatForm @created="emitResponse" />
+      <TweatForm @created="emitResponse" :user="user" />
     </div>
     <section>
+      <LoadingSpinner v-if="!reciveData" class="spin-loader" />
       <TweatItems
         v-for="tweat in tweats"
         :key="tweat.id"
@@ -28,19 +29,37 @@
 <script>
 import TweatItems from "../components/tweat/TweatItems";
 import TweatForm from "../components/tweat/TweatForm"
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default {
   name: "Tweat",
   components: {
-    TweatItems, TweatForm
+    TweatItems,
+    TweatForm,
+    LoadingSpinner,
   },
   props: {
     user: Object,
-    tweats: Object
+    tweats: Object,
+    inUserView: Boolean,
+    reciveData: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data() {
+    return {
+      isLoading: true,
+    }
   },
   methods: {
-    emitResponse() {
-      this.$emit('emitFetchData');
+    emitResponse(data) {
+      this.$emit('emitFetchData', data);
+    }
+  },
+  created() {
+    if (this.reciveData) {
+      this.isLoading = false
     }
   }
 };
@@ -71,6 +90,11 @@ export default {
   }
   section {
     padding: 1rem;
+    .spin-loader {
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;;
+    }
   }
 }
 </style>
