@@ -25,7 +25,7 @@
         </header>
       </div>
       <div class="wrapper-content">
-        <HeaderContent :user="user" />
+        <HeaderContent :user="user" :inUserView="inUserView" />
       </div>
     </div>
   </div>
@@ -50,6 +50,7 @@ export default {
   },
   props: {
     user: Object,
+    inUserView: Boolean,
   },
 };
 </script>
