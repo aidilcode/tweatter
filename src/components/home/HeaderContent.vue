@@ -6,41 +6,38 @@
         class="inner"
       >
         <div class="avatar">
-          <img
-            src="../../assets/images/solid-m.png"
-            alt=""
-            srcset=""
-            width="30"
-            height="30"
-          />
+          <img :src="user.avatar" alt="" srcset="" width="30" height="30" />
         </div>
-        <span class="font-semibold">jirenmaa</span>
+        <span class="font-semibold">{{ user.username }}</span>
       </router-link>
     </div>
-    <div class="create-content--video">
-      <div class="box-input-video">
-        <label for="video">
-          <span>+</span>
-        </label>
-        <input type="file" name="video" id="video" class="hidden">
-      </div>
-    </div>
-    <div class="top-rated-video">
-      <div class="videos">
-        <div class="box-video video-1">
-          <span>vid 1</span>
-        </div>
-        <div class="box-video video-2">
-          <span>vid 2</span>
-        </div>
-        <div class="box-video video-3">
-          <span>vid 3</span>
-        </div>
-        <div class="box-video video-4">
-          <span>vid 4</span>
+    <div v-if="!inUserView" class="header-content">
+      <div class="create-content--video">
+        <div class="box-input-video">
+          <label for="video">
+            <span>+</span>
+          </label>
+          <input type="file" name="video" id="video" class="hidden" />
         </div>
       </div>
+      <div class="top-rated-video">
+        <div class="videos">
+          <div class="box-video video-1">
+            <span>vid 1</span>
+          </div>
+          <div class="box-video video-2">
+            <span>vid 2</span>
+          </div>
+          <div class="box-video video-3">
+            <span>vid 3</span>
+          </div>
+          <div class="box-video video-4">
+            <span>vid 4</span>
+          </div>
+        </div>
+      </div>
     </div>
+    <div v-else class="header-content--user">user user user</div>
   </div>
 </template>
 
@@ -49,7 +46,13 @@ export default {
   name: "HeaderContent",
   props: {
     user: Object,
+    inUserView: Boolean,
   },
+  data() {
+    return {
+      tinUserView: true,
+    }
+  }
 };
 </script>
 
