@@ -6,7 +6,10 @@
       :class="{ '--exceeded': newTweatCharCount > 255 }"
     >
       <div class="content-tweat">
-        <span class="no-err" :class="{ 'picture-error': state.formError == true }">
+        <span
+          class="no-err"
+          :class="{ 'picture-error': state.formError == true }"
+        >
           max uplaod image size is 3Mb
         </span>
         <contenteditable
@@ -65,7 +68,7 @@ export default {
       formError: false,
       newTweatContent: "",
       contentImage: "",
-      selectedTweatType: "instant",
+      emitData: "",
     });
 
     const newTweatCharCount = computed(() => state.newTweatContent.length);
@@ -88,15 +91,34 @@ export default {
       this.$refs.setTweatImage.src = URL.createObjectURL(event.target.files[0]);
     },
     async createNewTweat() {
-      let formData = new FormData();
+      var picture = "";
+      var fktweat = "";
+      var tmpicts = this.state.imageContent;
+      // create fake tweat
+      fktweat = this.state.newTweatContent;
+      if (this.state.imageContent) {
+        picture = URL.createObjectURL(this.state.imageContent)
+      }
 
-      // [NOTE] only works in local
-      let access =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjE0MTkzMDA3LCJqdGkiOiJlNjdmZWI0ZGM4NTU0YmFkOWJiZGMxNTBjMzYwMDI4OCIsInVzZXJfaWQiOiJkZTM5NjVlZi01MmM0LTRjOGEtOGNlMy02ZGU3YTdiNWNlZjYifQ.Iv8kwFA9vkqx6E3T5ltVWIs4xD4skfVS52Vxc3ab66I";
+      this.state.newTweatContent = "";
+      this.state.imageContent = "";
+      this.state.emitData = {
+        author__username: localStorage.getItem("username"),
+        author__avatar_url: localStorage.getItem("avatar"),
+        tweat: fktweat,
+        picture_url: picture,
+        created_at: 0,
+      };
+      this.state.isHasImage = false;
+      this.state.formError = false;
+      // end of
+
+      let formData = new FormData();
+      let access = localStorage.getItem("access_token");
 
       // append data
-      formData.append("tweat", this.state.newTweatContent);
-      formData.append("picture", this.state.imageContent);
+      formData.append("tweat", fktweat);
+      formData.append("picture", tmpicts);
 
       await axios({
         method: "POST",
@@ -106,20 +128,13 @@ export default {
           Authorization: `Bearer ${access}`,
           "Content-Type": "application/json;charset=UTF-8",
         },
-      })
-        .then(() => {
-          this.state.newTweatContent = "";
-          this.state.imageContent = "";
-          this.state.isHasImage = false;
-          this.state.formError = false;
-        })
-        .catch((err) => {
-          if (err.response.status == 400) {
-            this.state.formError = true;
-          }
-        });
+      }).catch((err) => {
+        if (err.response.status == 400) {
+          this.state.formError = true;
+        }
+      });
 
-      this.$emit("created");
+      this.$emit("created", this.state.emitData);
     },
   },
 };
