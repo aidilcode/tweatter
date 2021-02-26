@@ -1,29 +1,45 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import store from '../store'
-import { users } from "../assets/users";
 
 import Home from '../views/Home.vue'
 import UserProfile from '../views/UserProfile'
 import Admin from '../views/Admin'
+import Signin from '../views/Signin'
+import Signup from '../views/Signup'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    meta: {
+      requiredLogin: true
+    }
   },
   {
     path: '/:username',
     name: "UserProfile",
-    component: UserProfile
+    component: UserProfile,
+    meta: {
+      requiredLogin: true
+    }
   },
   {
     path: "/admin",
     name: "Admin",
     component: Admin,
     meta: {
-      requiresAdminPerm: true
+      requiredLogin: true
     }
+  },
+  {
+    path: "/login",
+    name: "Signin",
+    component: Signin,
+  },
+  {
+    path: "/signup",
+    name: "Signup",
+    component: Signup,
   }
 ]
 
@@ -33,19 +49,15 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const user = store.state.User.user;
+  const isAuthenticated = localStorage.getItem('isAuthenticated')
 
-  if (!user) {
-    await store.dispatch('User/setUser', users[0])
-  }
-
-  const isAdmin = false;
-  const requireAdminPerm = to.matched.some(
-    record => record.meta.requiresAdminPerm
+  const requireLogin = to.matched.some(
+    record => record.meta.requiredLogin
   )
 
-  if (requireAdminPerm && !isAdmin) next({ name: 'Home' })
+  if (requireLogin && !isAuthenticated) next({ name: 'Signin' })
   else next()
 })
 
 export default router
+
