@@ -50,8 +50,8 @@ export default {
   name: "Signin",
   data() {
     return {
-      inputEmail: "me@ahmadalwiam.com",
-      inputPaswd: "jirenmaa",
+      inputEmail: "",
+      inputPaswd: "",
       formError: false,
     };
   },

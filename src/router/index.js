@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 // views
 import Home from '@/views/Home.vue'
 import UserProfile from '@/views/UserProfile'
-// import Admin from '../views/Admin'
 import Signin from '@/views/auth/Signin'
 // import Signup from '../views/Signup'
 // component
@@ -11,6 +10,11 @@ import UserMedias from '@/components/users/UserMedias'
 
 
 const routes = [
+  {
+    path: '/login',
+    name: 'Signin',
+    component: Signin,
+  },
   {
     path: '/',
     name: 'Home',
@@ -36,11 +40,6 @@ const routes = [
         meta: {requiredLogin: true},
       }
     ]
-  },
-  {
-    path: '/login',
-    name: 'Signin',
-    component: Signin,
   },
   // {
   //   path: '/signup',
