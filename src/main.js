@@ -2,7 +2,8 @@ import { createApp } from 'vue'
 
 import App from './App.vue'
 import router from "./router"
-import 'assets/styles/tailwind.css'
+
+require('./assets/styles/tailwind.css');
 
 
 createApp(App)
