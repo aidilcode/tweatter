@@ -9,7 +9,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import "./assets/styles/tailwind.css";
 * {
   margin: 0;
   outline: none !important;
