@@ -1,90 +1,39 @@
 <template>
   <div class="wrapper">
-    <Header :user="state.user" :inUserView="state.inUserView" />
-    <Tweat
-      :reciveData="state.reciveData"
-      :user="state.user"
-      :tweats="state.tweats"
-      @emitFetchData="updateTweats"
-    />
-    <Sidenav />
+    <Header :inUserView="state.inUserView" :user="state.user" />
+    <Tweats :user="state.user" />
+    <Sidebar />
   </div>
 </template>
 
 <script>
-import axios from "axios";
-import { reactive } from "vue";
+import { reactive } from 'vue';
 
-import Tweat from "./Tweat";
-import Header from "@/components/home/Header";
-import Sidenav from "@/components/home/Sidenav";
+import Header from '../components/header/Header'
+import Tweats from '../components/tweats/Tweats'
+import Sidebar from '../components/header/Sidebar'
 
 export default {
-  name: "Home",
+  name: 'Home',
   components: {
-    Tweat,
     Header,
-    Sidenav,
+    Tweats,
+    Sidebar,
   },
   setup() {
-    // const store = useStore();
-    // console.log(store.state.User)
-    // const tUser = computed(() => store.state.User.user);
-
     const state = reactive({
-      tweats: [],
-      tweats_length: 0,
       inUserView: false,
       user: {
-        "username": localStorage.getItem("username"),
-        "avatar": localStorage.getItem("avatar"),
-      },
-      reciveData: false,
-    });
-
-    async function updateTweats(emit) {
-      state.tweats.unshift({
-        id: emit.id,
-        author__username: emit.author__username,
-        author__avatar_url: emit.author__avatar_url,
-        tweat: emit.tweat,
-        picture_url: emit.picture_url,
-        created_at: emit.created_at,
-      })
-    }
-
-    async function fetchTweats() {
-      const userTweats = await axios({
-        method: 'GET',
-        url: 'http://localhost:8000/api/tweats/',
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json;charset=UTF-8"
-        }
-      }).catch((err) => console.error(err))
-
-      state.tweats = userTweats.data.data;
-      state.reciveData = true;
-    }
-
-    async function calcTweatsLength() {
-      return state.tweats_length.length
-    }
+        username: localStorage.getItem('username'),
+        avatar: localStorage.getItem('avatar'),
+      }
+    })
 
     return {
       state,
-      fetchTweats,
-      calcTweatsLength,
-      updateTweats,
-    };
+    }
   },
-  async created() {
-    await this.fetchTweats();
-  },
-  async mounted() {
-    await this.calcTweatsLength();
-  }
-};
+}
 </script>
 
 <style lang="scss" scoped>

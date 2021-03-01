@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import axiosInstance from "../axios";
+import axiosInstance from "@/plugin/axios";
 
 export default {
   name: "Signin",
@@ -58,7 +58,7 @@ export default {
   mounted() {
     if (
       localStorage.getItem("access_token") &&
-      localStorage.getItem("isAuthenticated")
+      localStorage.getItem("isLogin")
     ) {
       this.$router.push("/");
     }
@@ -75,7 +75,7 @@ export default {
           localStorage.setItem("refresh_token", res.data.refresh);
           localStorage.setItem("username", res.data.username);
           localStorage.setItem("avatar", res.data.avatar);
-          localStorage.setItem("isAuthenticated", true);
+          localStorage.setItem("isLogin", true);
           axiosInstance.defaults.headers["Authorization"] =
             "Bearer " + localStorage.getItem("access_token");
         })
@@ -103,7 +103,7 @@ export default {
 .image {
   overflow: hidden;
   position: relative;
-  background: url("../assets/images/pexels-photo-4252898.jpeg");
+  background: url("../../assets/images/pexels-photo-4252898.jpeg");
   background-size: cover;
   background-repeat: no-repeat;
   grid-column: span 6;

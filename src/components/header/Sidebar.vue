@@ -1,7 +1,7 @@
 <template>
-  <div class="sidenav">
+  <div class="sidebar">
     <div class="wrapper">
-      <div class="search">
+      <div class="searchbar">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -48,20 +48,18 @@
           <a href="">show more</a>
         </div>
       </div>
-      <div class="related">
-      </div>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: "Sidenav",
+  name: "Sidebar",
 };
 </script>
 
 <style lang="scss" scoped>
-.sidenav {
+.sidebar {
   overflow: scroll;
   position: fixed;
   right: 0;
@@ -77,7 +75,7 @@ export default {
   .wrapper {
     width: 21rem;
     margin-top: 3rem;
-    .search {
+    .searchbar {
       margin-right: 1rem;
       margin-left: 1rem;
       display: flex;
@@ -95,10 +93,10 @@ export default {
       }
     }
     .trendings {
-      font-family: "Montserrat Alternates", sans-serif;
+      // font-family: "Montserrat Alternates", sans-serif;
       border-top-left-radius: 4px;
       border-bottom-left-radius: 4px;
-      color: #ccc;
+      color: #eee;
 
       h3 {
         font-weight: 600;
@@ -110,7 +108,7 @@ export default {
         border-bottom: 1px solid #222;
       }
       .item {
-        color: #eee;
+        color: #ccc;
         padding: 0.75rem 1rem 0.75rem 1rem;
         p {
           font-size: 0.75rem;

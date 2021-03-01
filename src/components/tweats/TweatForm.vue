@@ -8,9 +8,9 @@
       <div class="content-tweat">
         <span
           class="no-err"
-          :class="{ 'picture-error': state.formError == true }"
+          :class="{'form-error': state.formErrorType == 'form-error'}"
         >
-          max uplaod image size is 3Mb
+          {{state.formErrorMsg}}
         </span>
         <contenteditable
           data-ph="What's Happening? ..."
@@ -48,9 +48,9 @@
 </template>
 
 <script>
-import axios from "axios";
+import axiosInstance from "@/plugin/axios";
 
-import FeatherImage from "../svgs/FeatherImage";
+import FeatherImage from "../icons/FeatherImage";
 import contenteditable from "vue-contenteditable";
 import { reactive, computed } from "vue";
 
@@ -65,7 +65,8 @@ export default {
       imageContent: "",
       isEditable: true,
       isHasImage: false,
-      formError: false,
+      formErrorType: "",
+      formErrorMsg: "",
       newTweatContent: "",
       contentImage: "",
       emitData: "",
@@ -74,7 +75,7 @@ export default {
     const newTweatCharCount = computed(() => state.newTweatContent.length);
 
     function enterPressed() {
-      alert("Enter Pressed");
+      alert('Enter Pressed');
     }
 
     // return states to the template
@@ -91,8 +92,9 @@ export default {
       this.$refs.setTweatImage.src = URL.createObjectURL(event.target.files[0]);
     },
     async createNewTweat() {
-      var picture = "";
-      var fktweat = "";
+
+      var picture = '';
+      var fktweat = '';
       var tmpicts = this.state.imageContent;
       // create fake tweat
       fktweat = this.state.newTweatContent;
@@ -100,41 +102,46 @@ export default {
         picture = URL.createObjectURL(this.state.imageContent)
       }
 
-      this.state.newTweatContent = "";
-      this.state.imageContent = "";
-      this.state.emitData = {
-        author__username: localStorage.getItem("username"),
-        author__avatar_url: localStorage.getItem("avatar"),
-        tweat: fktweat,
-        picture_url: picture,
-        created_at: 0,
-      };
-      this.state.isHasImage = false;
-      this.state.formError = false;
-      // end of
+      if (fktweat == "" && tmpicts == "") {
+        this.state.formErrorMsg = "tweat or image can't be empty"
+        this.state.formErrorType = 'form-error'
+      } else {
+        this.state.newTweatContent = '';
+        this.state.imageContent = '';
+        this.state.emitData = {
+          author__username: localStorage.getItem("username"),
+          author__avatar_url: localStorage.getItem("avatar"),
+          tweat: fktweat,
+          picture_url: picture,
+          created_at: 0,
+        };
+        this.state.isHasImage = false;
+        // end of
 
-      let formData = new FormData();
-      let access = localStorage.getItem("access_token");
+        let formData = new FormData();
+        let access = localStorage.getItem("access_token");
 
-      // append data
-      formData.append("tweat", fktweat);
-      formData.append("picture", tmpicts);
+        // append data
+        formData.append("tweat", fktweat);
+        formData.append("picture", tmpicts);
 
-      await axios({
-        method: "POST",
-        url: "http://localhost:8000/api/tweats/",
-        data: formData,
-        headers: {
-          Authorization: `Bearer ${access}`,
-          "Content-Type": "application/json;charset=UTF-8",
-        },
-      }).catch((err) => {
-        if (err.response.status == 400) {
-          this.state.formError = true;
-        }
-      });
+        await axiosInstance({
+          method: "POST",
+          url: "tweats/",
+          data: formData,
+          headers: {
+            Authorization: `Bearer ${access}`,
+            "Content-Type": "application/json;charset=UTF-8",
+          },
+        }).catch((err) => {
+          if (err.response.status == 400) {
+            this.state.formErrorMsg = 'max uplaod image size is 3Mb'
+            this.state.formErrorType = 'form-error'
+          }
+        });
 
-      this.$emit("created", this.state.emitData);
+        this.$emit('created', this.state.emitData);
+      }
     },
   },
 };
@@ -144,7 +151,7 @@ export default {
 .no-err {
   display: none;
 }
-.picture-error {
+.form-error {
   display: block !important;
   color: crimson;
 }
@@ -153,7 +160,7 @@ export default {
 }
 .forms {
   width: 100%;
-  padding: 1rem;
+  padding: 1rem 0 1rem 0;
   .create-tweat {
     color: rgb(143, 143, 143, 0.5) !important;
     padding: 1rem;

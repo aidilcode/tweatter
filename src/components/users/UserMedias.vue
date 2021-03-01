@@ -83,12 +83,12 @@ export default {
       reciveData: false,
     })
 
-    async function fetchUserTweats() {
+    async function fetchUserMedias() {
       let access = localStorage.getItem('access_token')
 
       const response = await axiosInstance({
         method: 'GET',
-        url: `${requestUser}/tweats`,
+        url: `${requestUser}/medias`,
         headers: {
           Authorization: `Bearer ${access}`,
           "Content-Type": "application/json;charset=UTF-8",
@@ -110,12 +110,12 @@ export default {
 
     return {
       state,
-      fetchUserTweats,
+      fetchUserMedias,
       moreOption,
     }
   },
   async created() {
-    await this.fetchUserTweats()
+    await this.fetchUserMedias()
   },
   methods: {
     async deleteTweat(id) {

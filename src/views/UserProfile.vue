@@ -1,96 +1,99 @@
 <template>
-  <div class="wrapper">
-    <Header :user="state.user" :inUserView="state.inUserView" />
+  <div class="user-profile">
+    <Header :user="user" :inUserView="state.inUserView" />
     <div class="user-wrapper">
       <div class="user-porfile">
         <div class="background-cover"></div>
         <div class="inner">
           <div class="avatar">
-            <img :src="state.user.avatar" alt="" srcset="">
+            <img :src="state.userData.avatar" alt="" srcset="">
           </div>
           <div class="about">
-            <p class="text-xl font-semibold">{{ state.user.username }}</p>
+            <p class="text-xl font-semibold">{{ state.userData.username }}</p>
           </div>
         </div>
       </div>
       <div class="tabs">
-        <div class="active">tweats</div>
-        <div>media</div>
-        <div>likes</div>
+        <router-link :to="state.links.tweat">tweats</router-link>
+        <router-link :to="state.links.media">media</router-link>
+        <router-link :to="state.links.likes">likes</router-link>
       </div>
       <div class="user-tweat-items">
-        <LoadingSpinner v-if="!state.reciveData" class="spin-loader" />
-        <TweatItems
-          v-for="tweat in state.tweats"
-          :key="tweat.id"
-          :tweatId="tweat.id"
-          :author="tweat.author__username"
-          :authorAvatar="tweat.author__avatar_url"
-          :tweat="tweat.tweat"
-          :pictureUrl="tweat.picture_url"
-          :createdAt="tweat.created_at"
-          @deleted="fetchTweats"
-        />
+        <router-view />
       </div>
     </div>
-    <Sidenav />
+    <Sidebar />
   </div>
 </template>
 
 <script>
-import axios from "axios";
-import { reactive } from "vue";
-import Header from "@/components/home/Header";
-import TweatItems from "../components/tweat/TweatItems";
-import Sidenav from "@/components/home/Sidenav";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { reactive } from 'vue'
+import { useRoute } from 'vue-router'
+import axiosInstance from '@/plugin/axios'
+
+import Header from '@/components/header/Header'
+import Sidebar from '@/components/header/Sidebar'
 
 export default {
-  name: "UserProfile",
+  name: 'UserProfile',
   components: {
     Header,
-    TweatItems,
-    Sidenav,
-    LoadingSpinner,
+    Sidebar,
+  },
+  props: {
+    user: Object
   },
   setup() {
-    const state = reactive({
-      user: {
-        username: localStorage.getItem("username"),
-        avatar: localStorage.getItem("avatar"),
-      },
-      tweats: [],
-      inUserView: true,
-      reciveData: false,
-    });
+    const route = useRoute()
+    const requestUser = route.params.username
 
-    async function fetchTweats() {
-      const userTweats = await axios({
-        method: "GET",
-        url: `http://localhost:8000/api/${state.user.username}`,
+    const state = reactive({
+      userData: {
+        username: '',
+        avatar: '',
+      },
+      inUserView: true,
+      links: {
+        tweat: `/${requestUser}`,
+        media: `/${requestUser}/media`,
+        likes: `/${requestUser}/likes`,
+      },
+      currRoute: route.params,
+    })
+
+    async function fetchUserData() {
+      let access = localStorage.getItem('access_token')
+
+      const response = await axiosInstance({
+        method: 'GET',
+        url: `${requestUser}`,
         headers: {
-          Accept: "application/json",
+          Authorization: `Bearer ${access}`,
           "Content-Type": "application/json;charset=UTF-8",
         },
-      }).catch((err) => console.error(err));
+      }).catch((err) => {
+        if (err.response.status == 400) {
+          console.error(err)
+        }
+      });
 
-      state.tweats = userTweats.data.data;
-      state.reciveData = true;
+      state.userData.username = response.data.data.username
+      state.userData.avatar = response.data.data.avatar
     }
 
     return {
       state,
-      fetchTweats,
-    };
+      fetchUserData,
+    }
   },
   async created() {
-    await this.fetchTweats();
+    await this.fetchUserData()
   },
-};
+}
 </script>
 
 <style lang="scss" scoped>
-.wrapper {
+.user-profile {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
 }
@@ -98,24 +101,28 @@ export default {
   font-family: "Roboto", sans-serif;
   grid-column: span 6;
   .user-porfile {
-    padding-bottom: 2rem;
+    padding-bottom: 8rem;
     margin: 0 3rem 0 3rem;
     border: 1px solid #222;
     border-top: none !important;
     border-bottom: none !important;
     .background-cover {
       z-index: -99;
-      position: absolute;
-      width : 576px;
+      // position: absolute;
+      width : auto;
       height: 140px;
-      max-width : 576px;
+      max-width : 586px;
       max-height: 140px;
       background-color: rgb(24, 24, 24);
     }
     .inner {
-      padding: 4.75rem 1.5rem 1.5rem 1.5rem;
+      z-index: 99;
+      position: absolute;
+      top: 5rem;
+      padding: 0 1.5rem 1.5rem 1.5rem;
       .avatar {
         img {
+          background-color: #111;
           border: 5px solid #111;
           border-radius: 50%;
           width: 110px;
@@ -138,7 +145,7 @@ export default {
       color: #34D399;
       border-bottom: 3px solid #34D399;
     }
-    div {
+    a {
       color: #ccc;
       padding: 1rem 4.7rem 1rem 4.7rem;
       cursor: pointer;
@@ -153,11 +160,6 @@ export default {
   }
   .user-tweat-items {
     margin: 2rem 3rem 2rem 3rem;
-    .spin-loader {
-      display: flex;
-      justify-content: center;
-      margin-top: 1rem;;
-    }
   }
 }
 </style>

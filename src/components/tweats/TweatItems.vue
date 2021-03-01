@@ -1,11 +1,15 @@
 <template>
   <div class="tweat">
-    <div class="user-avatar">
-      <div class="user-wrapper">
+    <div class="author-wrapper">
+      <div class="info">
         <div class="img">
           <img :src="authorAvatar" alt="" width="30" height="30" />
         </div>
-        <span class="author font-medium">{{ author }}</span>
+        <router-link
+          :to="{ name: 'UserProfile', params: { username: author } }"
+          class="author font-medium"
+          >{{ author }}</router-link
+        >
       </div>
       <div
         class="dropdown"
@@ -17,9 +21,7 @@
           <FeatherMoreHorizontal />
         </button>
         <div class="dropdown-content" :id="'ddb-' + tweatId">
-          <div>edit tweat</div>
-          <div @click="deleteTweat(tweatId)">delete tweat</div>
-          <div>archive tweat</div>
+          <div>report</div>
         </div>
       </div>
     </div>
@@ -53,14 +55,11 @@
   </div>
 </template>
 
-
 <script>
-import axios from "axios";
-
-import FeatherMoreHorizontal from "../svgs/FeatherMoreHorizontal";
-import FeatherComments from "../svgs/FeatherComments";
-import FeatherHeart from "../svgs/FeatherHeart";
-import FeatherShare from "../svgs/FeatherShare";
+import FeatherMoreHorizontal from "@/components/icons/FeatherMoreHorizontal";
+import FeatherComments from "@/components/icons/FeatherComments";
+import FeatherHeart from "@/components/icons/FeatherHeart";
+import FeatherShare from "@/components/icons/FeatherShare";
 
 export default {
   name: "TweatItems",
@@ -95,32 +94,9 @@ export default {
     inUserView: Boolean,
   },
   methods: {
-    async deleteTweat(id) {
-      let access = localStorage.getItem("access_token");
-      await axios({
-        method: "DELETE",
-        url: `http://localhost:8000/api/tweat/${id}`,
-        headers: {
-          Authorization: `Bearer ${access}`,
-          "Content-Type": "application/json;charset=UTF-8",
-        },
-      }).catch((err) => {
-        if (err.response.status == 400) {
-          this.state.formError = true;
-        }
-      });
-
-      // console.log(id + " deleted")
-      this.$emit("deleted");
-    },
-
-    favoriteTweat(id) {
-      this.$emit("favorite", id);
-    },
-
     moreOption(id) {
       const DDbuttons = document.getElementById(`ddb-${id}`);
-      DDbuttons.classList.toggle("block")
+      DDbuttons.classList.toggle("block");
     },
   },
 };
@@ -141,16 +117,15 @@ export default {
     background-color: rgb(19, 19, 19);
   }
 }
-
 .tweat {
   font-family: "Roboto", sans-serif;
-  .user-avatar {
+  .author-wrapper {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-top: 0.5rem;
     color: #ccc;
-    .user-wrapper {
+    .info {
       display: flex;
       align-items: center;
       img {
