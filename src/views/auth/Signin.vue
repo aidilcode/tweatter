@@ -66,7 +66,7 @@ export default {
   methods: {
     async loginTweat() {
       const error = await axiosInstance
-        .post(`token/`, {
+        .post('token/', {
           email: this.inputEmail,
           password: this.inputPaswd,
         })
