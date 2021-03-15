@@ -1,5 +1,5 @@
 <template>
-  <div class="tweat">
+  <div class="tweat mt-2">
     <div class="author-wrapper">
       <div class="info">
         <div class="img">
@@ -11,7 +11,7 @@
           >{{ author }}</router-link
         >
       </div>
-      <div
+      <!-- <div
         class="dropdown"
         @click="moreOption(tweatId)"
         :id="tweatId"
@@ -23,7 +23,7 @@
         <div class="dropdown-content" :id="'ddb-' + tweatId">
           <div>report</div>
         </div>
-      </div>
+      </div> -->
     </div>
     <div class="content">
       <div class="content-body">
@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import FeatherMoreHorizontal from "@/components/icons/FeatherMoreHorizontal";
+// import FeatherMoreHorizontal from "@/components/icons/FeatherMoreHorizontal";
 import FeatherComments from "@/components/icons/FeatherComments";
 import FeatherHeart from "@/components/icons/FeatherHeart";
 import FeatherShare from "@/components/icons/FeatherShare";
@@ -64,7 +64,7 @@ import FeatherShare from "@/components/icons/FeatherShare";
 export default {
   name: "TweatItems",
   components: {
-    FeatherMoreHorizontal,
+    // FeatherMoreHorizontal,
     FeatherComments,
     FeatherHeart,
     FeatherShare,
@@ -104,16 +104,19 @@ export default {
 
 <style lang="scss" scoped>
 .tweat {
+  margin-top: 2rem;
   cursor: pointer;
   padding: 0.5rem 1.25rem 1rem 1.25rem;
   border: 1px solid #222;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   border-radius: 4px;
   word-break: break-all;
+  transition: 0.2s ease-in-out;
   &:not(:first-of-type) {
     margin-top: 1.5rem;
   }
   &:hover {
+    transition: 0.2s ease-in-out;
     background-color: rgb(19, 19, 19);
   }
 }
@@ -149,11 +152,14 @@ export default {
       border-radius: 20px;
       border: none;
       cursor: pointer;
+      transition: 0.2s ease-in-out;
       &:hover {
+        transition: 0.2s ease-in-out;
         background-color: rgb(52, 211, 153, 0.1);
       }
     }
     .dropdown {
+      z-index: 999 !important;
       position: relative;
       display: inline-block;
     }
@@ -176,7 +182,9 @@ export default {
         padding: 12px 20px;
         text-decoration: none;
         display: block;
+        transition: 0.2s ease-in-out;
         &:hover {
+          transition: 0.2s ease-in-out;
           background-color: rgb(24, 24, 24);
         }
       }

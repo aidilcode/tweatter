@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <Header :inUserView="state.inUserView" :user="state.user" />
-    <Tweats :user="state.user" />
+    <router-view />
     <Sidebar />
   </div>
 </template>
@@ -10,14 +10,12 @@
 import { reactive } from 'vue';
 
 import Header from '../components/header/Header'
-import Tweats from '../components/tweats/Tweats'
 import Sidebar from '../components/header/Sidebar'
 
 export default {
   name: 'Home',
   components: {
     Header,
-    Tweats,
     Sidebar,
   },
   setup() {

@@ -9,18 +9,18 @@
     stroke-width="2"
     stroke-linecap="round"
     stroke-linejoin="round"
-    class="feather feather-linkedin"
+    class="feather feather-arrow-left"
   >
-    <path
-      d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"
-    ></path>
-    <rect x="2" y="9" width="4" height="12"></rect>
-    <circle cx="4" cy="4" r="2"></circle>
+    <line x1="19" y1="12" x2="5" y2="12"></line>
+    <polyline points="12 19 5 12 12 5"></polyline>
   </svg>
 </template>
 
 <script>
 export default {
-  name: "FeatherLinkedin",
+  name: "FeatherArrowLeft",
 };
 </script>
+
+<style>
+</style>

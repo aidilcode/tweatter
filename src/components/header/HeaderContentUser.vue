@@ -2,7 +2,7 @@
   <div class="header-content-inner">
     <!-- user header content info -->
     <div class="user-content">
-      <router-link
+      <router-link v-if="user.username"
         :to="{ name: 'UserProfile', params: { username: user.username } }"
         class="inner"
       >
@@ -12,34 +12,22 @@
         <span class="font-semibold">{{ user.username }}</span>
       </router-link>
     </div>
-    <div class="header-content">
-      <div class="create-content--video">
-        <div class="box-input-video">
-          <label for="video">
-            <span>+</span>
-          </label>
-          <input type="file" name="video" id="video" class="hidden" />
-        </div>
-      </div>
-      <div class="top-rated-video">
-        <div class="videos">
-          <div class="box-video video-1"><span>vid 1</span></div>
-          <div class="box-video video-2"><span>vid 2</span></div>
-          <div class="box-video video-3"><span>vid 3</span></div>
-          <div class="box-video video-4"><span>vid 4</span></div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: "HeaderContent",
-  props: {
-    user: Object,
-  },
-};
+  name: "HeaderContentUser",
+  data() {
+    return {
+      user: {
+        username: localStorage.getItem('username'),
+        avatar: localStorage.getItem('avatar'),
+      }
+    }
+  }
+}
+
 </script>
 
 <style lang="scss" scoped>
@@ -152,3 +140,4 @@ export default {
   }
 }
 </style>
+

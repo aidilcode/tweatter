@@ -2,7 +2,7 @@
   <div class="tweats-wrapper">
     <header>
       <div class="greet font-semibold">
-        <span class="text-3xl">Hey {{ user.username }},</span>
+        <span class="text-3xl">Hi {{ state.username }},</span>
         <h1 class="text-7xl">What's Up</h1>
       </div>
     </header>
@@ -11,23 +11,30 @@
     </section>
     <section class="tweats">
       <LoadingSpinner v-if="!state.reciveData" class="spin-loader" />
-      <TweatItems
+      <router-link
         v-for="tweat in state.tweats"
         :key="tweat.id"
-        :tweatId="tweat.id"
-        :author="tweat.author__username"
-        :authorAvatar="tweat.author__avatar_url"
-        :tweat="tweat.tweat"
-        :pictureUrl="tweat.picture_url"
-        :createdAt="tweat.created_at"
-      />
+        :to="{
+          name: 'TweatDetail',
+          params: { username: tweat.author__username, id: tweat.id },
+        }"
+      >
+        <TweatItems
+          :tweatId="tweat.id"
+          :author="tweat.author__username"
+          :authorAvatar="tweat.author__avatar_url"
+          :tweat="tweat.tweat"
+          :pictureUrl="tweat.picture_url"
+          :createdAt="tweat.created_at"
+        />
+      </router-link>
     </section>
   </div>
 </template>
 
 <script>
-import { reactive } from 'vue';
-import axiosInstance from '@/plugin/axios'
+import { reactive } from "vue";
+import axiosInstance from "@/plugin/axios";
 
 import LoadingSpinner from "@/components/LoadingSpinner";
 import TweatForm from "./TweatForm";
@@ -40,15 +47,13 @@ export default {
     TweatForm,
     TweatItems,
   },
-  props: {
-    user: Object,
-  },
   setup() {
     const state = reactive({
+      username: localStorage.getItem("username"),
       tweats: [],
       tweatsLeng: 0,
       reciveData: false,
-    })
+    });
 
     // will be called if there any emit
     // from TweatForm component, and update
@@ -61,15 +66,15 @@ export default {
         tweat: emit.tweat,
         picture_url: emit.picture_url,
         created_at: emit.created_at,
-      })
+      });
     }
 
     // fetch all tweats from tweatter api
     async function fetchTweats() {
       const tweatsAll = await axiosInstance({
-        method: 'GET',
-        url: 'tweats/',
-      }).catch((err) => console.error(err))
+        method: "GET",
+        url: "tweats/",
+      }).catch((err) => console.error(err));
 
       state.tweats = tweatsAll.data.data;
       state.reciveData = true;
@@ -78,13 +83,13 @@ export default {
     return {
       state,
       emitFetchData,
-      fetchTweats
-    }
+      fetchTweats,
+    };
   },
   async created() {
     await this.fetchTweats();
   },
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -95,19 +100,16 @@ export default {
   header {
     padding-top: 3rem;
     color: #eee;
-    font-family: 'Montserrat Alternates', sans-serif;
+    font-family: "Montserrat Alternates", sans-serif;
   }
   section {
     margin: 1rem 0 1rem 0;
-  }
-  .tforms {
-
   }
   .tweats {
     .spin-loader {
       display: flex;
       justify-content: center;
-      margin-top: 1rem;;
+      margin-top: 1rem;
     }
   }
 }

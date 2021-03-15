@@ -9,6 +9,7 @@
         <span class="author font-medium">{{ tweat.author__username }}</span>
       </div>
       <div
+        v-if="state.current == tweat.author__username"
         class="dropdown"
         @click="moreOption(tweat.id)"
         :id="tweat.id"
@@ -18,13 +19,18 @@
           <FeatherMoreHorizontal />
         </button>
         <div class="dropdown-content" :id="'ddb-' + tweat.id">
-          <div>edit tweat</div>
-          <div @click="deleteTweat(tweat.id)">delete tweat</div>
-          <div>archive tweat</div>
+          <div @click="deleteTweat(tweat.id)">delete</div>
+          <div>archive</div>
         </div>
       </div>
     </div>
-    <div class="content">
+    <router-link
+      :to="{
+        name: 'TweatDetail',
+        params: { username: tweat.author__username, id: tweat.id },
+      }"
+      class="content"
+    >
       <div class="content-body">
         {{ tweat.tweat }}
       </div>
@@ -50,14 +56,14 @@
           </div>
         </div>
       </div>
-    </div>
+    </router-link>
   </div>
 </template>
 
 <script>
-import { reactive } from 'vue'
-import { useRoute } from 'vue-router'
-import axiosInstance from '@/plugin/axios'
+import { reactive } from "vue";
+import { useRoute } from "vue-router";
+import axiosInstance from "@/plugin/axios";
 
 import LoadingSpinner from "@/components/LoadingSpinner";
 import FeatherMoreHorizontal from "@/components/icons/FeatherMoreHorizontal";
@@ -66,7 +72,7 @@ import FeatherHeart from "@/components/icons/FeatherHeart";
 import FeatherShare from "@/components/icons/FeatherShare";
 
 export default {
-  name: 'TweatItems',
+  name: "TweatItems",
   components: {
     FeatherMoreHorizontal,
     FeatherComments,
@@ -75,47 +81,50 @@ export default {
     LoadingSpinner,
   },
   setup() {
-    const route = useRoute()
-    const requestUser = route.params.username
+    const route = useRoute();
+    const requestUser = route.params.username;
 
     const state = reactive({
       userTweats: [],
       reciveData: false,
-    })
+      current: localStorage.getItem("username"),
+    });
 
     async function fetchUserTweats() {
-      let access = localStorage.getItem('access_token')
+      let access = localStorage.getItem("access_token");
 
       const response = await axiosInstance({
-        method: 'GET',
+        method: "GET",
         url: `${requestUser}/tweats`,
         headers: {
           Authorization: `Bearer ${access}`,
           "Content-Type": "application/json;charset=UTF-8",
         },
       }).catch((err) => {
-        if (err.response.status == 400) {
-          console.error(err)
-        }
+        console.log("in user tweat", err.response)
       });
 
-      state.userTweats = response.data.data
-      state.reciveData = true
+      if (typeof response === 'object') {
+        state.userTweats = response.data.data;
+        state.reciveData = true;
+      } else {
+        window.location.href = window.location;
+      }
     }
 
     function moreOption(id) {
       const DDbuttons = document.getElementById(`ddb-${id}`);
-      DDbuttons.classList.toggle("block")
+      DDbuttons.classList.toggle("block");
     }
 
     return {
       state,
       fetchUserTweats,
       moreOption,
-    }
+    };
   },
   async created() {
-    await this.fetchUserTweats()
+    await this.fetchUserTweats();
   },
   methods: {
     async deleteTweat(id) {
@@ -129,14 +138,17 @@ export default {
           "Content-Type": "application/json;charset=UTF-8",
         },
       }).catch((err) => {
+        if (err.response.status == 401) {
+          alert("You are not unauthorized to use this action.");
+        }
         if (err.response.status == 400) {
-          console.error(err)
+          console.error(err);
         }
       });
 
       await this.fetchUserTweats();
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -144,7 +156,7 @@ export default {
 .spin-loader {
   display: flex;
   justify-content: center;
-  margin-top: 1rem;;
+  margin-top: 1rem;
 }
 .tweat {
   cursor: pointer;

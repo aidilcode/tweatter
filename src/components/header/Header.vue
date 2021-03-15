@@ -15,10 +15,10 @@
               <router-link to="/" class="link"><FeatherHash /></router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/" class="link"><FeatherLinkedin /></router-link>
+              <router-link to="/" class="link"><FeatherBookmark /></router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/" class="link"
+              <router-link to="/settings" class="link"
                 ><FeatherMoreVertical
               /></router-link>
             </li>
@@ -33,7 +33,12 @@
         </nav>
       </div>
       <!-- header content -->
-      <div v-if="inUserView" class="wrapper-content">in user view</div>
+      <div v-if="inUserView" class="wrapper-content">
+        <HeaderContentUser :user="user" />
+      </div>
+      <div v-else-if="inSettingView" class="wrapper-content-settings">
+        <HeaderContentSetting />
+      </div>
       <div v-else class="wrapper-content">
         <HeaderContent :user="user" />
       </div>
@@ -46,11 +51,13 @@ import axiosInstance from "@/plugin/axios";
 
 import FeatherGrid from "@/components/icons/FeatherGrid";
 import FeatherHash from "@/components/icons/FeatherHash";
-import FeatherLinkedin from "@/components/icons/FeatherLinkedin";
+import FeatherBookmark from "@/components/icons/FeatherBookmark";
 import FeatherMoreVertical from "@/components/icons/FeatherMoreVertical";
 import FeatherLogout from "@/components/icons/FeatherLogout";
 
 import HeaderContent from "./HeaderContent";
+import HeaderContentUser from "./HeaderContentUser";
+import HeaderContentSetting from "./HeaderContentSetting";
 
 export default {
   name: "Header",
@@ -58,14 +65,17 @@ export default {
     FeatherMoreVertical,
     FeatherGrid,
     FeatherHash,
-    FeatherLinkedin,
+    FeatherBookmark,
     FeatherLogout,
 
     HeaderContent,
+    HeaderContentUser,
+    HeaderContentSetting,
   },
   props: {
     user: Object,
     inUserView: Boolean,
+    inSettingView: Boolean,
   },
   methods: {
     // user logout function
@@ -167,7 +177,9 @@ export default {
               display: inline-block;
               border-radius: 50%;
               padding: 1rem;
+              transition: 0.2s ease-in-out;
               &:hover {
+                transition: 0.2s ease-in-out;
                 background-color: rgb(52, 211, 153, 0.1);
               }
             }
@@ -182,11 +194,13 @@ export default {
           color: #ccc;
           padding: 0.72rem;
           cursor: pointer;
+          border-radius: 40px;
+          transition: 0.2s ease-in-out;
           svg {
             transition: 0.2s ease-in-out;
           }
           &:hover {
-            border-radius: 40px;
+            transition: 0.2s ease-in-out;
             background-color: rgba(155, 79, 94, 0.1);
             svg {
               transition: 0.2s ease-in-out;
@@ -205,6 +219,16 @@ export default {
       max-height: 100%;
       width: 13.25rem;
       margin: 0 1.5rem 0 1.5rem;
+    }
+    .wrapper-content-settings {
+      // font-family: "Roboto", sans-serif;
+      grid-column: span 5;
+      position: fixed;
+      left: 5rem;
+      min-height: 100vh;
+      height: 100%;
+      max-height: 100%;
+      width: 18.3rem;
     }
   }
 }

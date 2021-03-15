@@ -2,7 +2,13 @@
   <div class="login-wrapper">
     <div class="image"></div>
     <div class="forms">
-      <div class="inner">
+      <div class="inner-loading" v-if="reciveData">
+        <LoadingSpinner />
+        <div>
+          <span>wait for logging in ...</span>
+        </div>
+      </div>
+      <div class="inner" v-else>
         <h1 class="sub text-6xl font-extrabold tracking-widest">
           Content Information
         </h1>
@@ -45,11 +51,16 @@
 
 <script>
 import axiosInstance from "@/plugin/axios";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default {
   name: "Signin",
+  components: {
+    LoadingSpinner
+  },
   data() {
     return {
+      reciveData: false,
       inputEmail: "",
       inputPaswd: "",
       formError: false,
@@ -65,6 +76,7 @@ export default {
   },
   methods: {
     async loginTweat() {
+      this.reciveData = true;
       const error = await axiosInstance
         .post('token/', {
           email: this.inputEmail,
@@ -79,14 +91,13 @@ export default {
           axiosInstance.defaults.headers["Authorization"] =
             "Bearer " + localStorage.getItem("access_token");
         })
-        .catch((err) => {
-          if (err.response.status == 400) {
-            this.formError = true;
-          }
+        .catch(() => {
+          this.formError = true;
         });
 
       if (error == null) {
         this.$router.push("/");
+        this.reciveData = false;
       }
     },
   },
@@ -118,7 +129,26 @@ export default {
 .forms {
   font-family: "Montserrat", sans-serif;
   grid-column: span 6;
-  margin: 5rem;
+  padding: 5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .inner-loading {
+    z-index: 99;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column !important;
+    justify-content: center;
+    align-items: center;
+    div {
+      margin-top: 1rem;
+      span {
+        font-size: 1.2rem;
+        color: #ddd;
+      }
+    }
+  }
   .inner {
     color: #ddd;
     .wrap {

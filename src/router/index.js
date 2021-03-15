@@ -3,8 +3,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/views/Home.vue'
 import UserProfile from '@/views/UserProfile'
 import Signin from '@/views/auth/Signin'
+import Settings from '@/views/Settings'
 // import Signup from '../views/Signup'
 // component
+import Tweats from '@/components/tweats/Tweats'
+import TweatDetail from '@/components/tweats/TweatDetail'
 import UserTweats from '@/components/users/UserTweats'
 import UserMedias from '@/components/users/UserMedias'
 
@@ -17,9 +20,22 @@ const routes = [
   },
   {
     path: '/',
-    name: 'Home',
+    name: 'Home.index',
     component: Home,
-    meta: {requiredLogin: true}
+    meta: {requiredLogin: true},
+    children: [
+      { // default child router
+        path: '',
+        name: 'Tweats',
+        component: Tweats,
+        meta: {requiredLogin: true},
+      },
+      { // tweat detail
+        path: '/:username/status/:id',
+        name: 'TweatDetail',
+        component: TweatDetail,
+      },
+    ]
   },
   {
     path: '/:username',
@@ -41,6 +57,11 @@ const routes = [
       }
     ]
   },
+  { // settings
+    path: '/settings',
+    name: 'Settings',
+    component: Settings
+  }
   // {
   //   path: '/signup',
   //   name: 'Signup',

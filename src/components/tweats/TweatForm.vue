@@ -92,7 +92,6 @@ export default {
       this.$refs.setTweatImage.src = URL.createObjectURL(event.target.files[0]);
     },
     async createNewTweat() {
-
       var picture = '';
       var fktweat = '';
       var tmpicts = this.state.imageContent;
