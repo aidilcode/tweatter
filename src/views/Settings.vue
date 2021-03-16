@@ -23,9 +23,9 @@
                 :noNL="true"
                 :noHTML="true"
                 class="uname"
-                :class="{'--exceeded': unameLength > 10}"
+                :class="{'--exceeded': unameLength > 11}"
               />
-              <p class="--exceeded text-sm" v-if="unameLength > 10">
+              <p class="--exceeded text-sm" v-if="unameLength > 11">
                 length of username must be lower or equal 10 character
               </p>
               <span>@{{ state.userData.username }}</span>
@@ -39,7 +39,7 @@
           </div>
           <div class="submit-changes">
             <button
-              :disabled="state.submitting || unameLength > 10"
+              :disabled="state.submitting || unameLength > 11"
               :class="{ submitting: state.submitting }"
               type="submit"
             >
