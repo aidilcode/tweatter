@@ -1,4 +1,12 @@
 <template>
+  <div v-if="isLogout" class="overlay">
+    <div class="inner">
+      <div class="wrap">
+        <LoadingSpinner />
+        logging out
+      </div>
+    </div>
+  </div>
   <div class="header">
     <div class="wrapper">
       <!-- header navigations -->
@@ -54,6 +62,7 @@ import FeatherHash from "@/components/icons/FeatherHash";
 import FeatherBookmark from "@/components/icons/FeatherBookmark";
 import FeatherMoreVertical from "@/components/icons/FeatherMoreVertical";
 import FeatherLogout from "@/components/icons/FeatherLogout";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 import HeaderContent from "./HeaderContent";
 import HeaderContentUser from "./HeaderContentUser";
@@ -71,15 +80,22 @@ export default {
     HeaderContent,
     HeaderContentUser,
     HeaderContentSetting,
+    LoadingSpinner,
   },
   props: {
     user: Object,
     inUserView: Boolean,
     inSettingView: Boolean,
   },
+  data() {
+    return {
+      isLogout: false,
+    };
+  },
   methods: {
     // user logout function
     async logout() {
+      this.isLogout = true;
       let access = localStorage.getItem("access_token");
       let refresh = localStorage.getItem("refresh_token");
 
@@ -91,7 +107,8 @@ export default {
           Authorization: `Bearer ${access}`,
           "Content-Type": "application/json;charset=UTF-8",
         },
-      }).catch(() => {})
+      })
+        .catch(() => {})
         .then(() => {
           this.$router.push("/login");
         });
@@ -105,12 +122,35 @@ export default {
       // set header auth to null, in order to
       // prevent user action after logout
       axiosInstance.defaults.headers["Authorization"] = null;
-    }
-  }
+      this.isLogout = false;
+    },
+  },
 };
 </script>
 
 <style lang="scss" scoped>
+.overlay {
+  z-index: 999;
+  position: fixed;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  background-color: rgba(17, 17, 17, 0.8);
+  .inner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    .wrap {
+      color: #ccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column !important;
+    }
+  }
+}
 .header {
   // background-color: #333;
   grid-column: span 3;
