@@ -17,9 +17,8 @@
           tag="div"
           :contenteditable="state.isEditable"
           v-model="state.newTweatContent"
-          :noNL="true"
+          :noNL="false"
           :noHTML="true"
-          @returned="enterPressed"
         />
         <div
           class="tweat-image"
@@ -74,15 +73,10 @@ export default {
 
     const newTweatCharCount = computed(() => state.newTweatContent.length);
 
-    function enterPressed() {
-      alert('Enter Pressed');
-    }
-
     // return states to the template
     return {
       state,
       newTweatCharCount,
-      enterPressed,
     };
   },
   methods: {
