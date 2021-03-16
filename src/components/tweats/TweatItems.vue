@@ -11,19 +11,6 @@
           >{{ author }}</router-link
         >
       </div>
-      <!-- <div
-        class="dropdown"
-        @click="moreOption(tweatId)"
-        :id="tweatId"
-        style="float: right"
-      >
-        <button class="dropbtn">
-          <FeatherMoreHorizontal />
-        </button>
-        <div class="dropdown-content" :id="'ddb-' + tweatId">
-          <div>report</div>
-        </div>
-      </div> -->
     </div>
     <div class="content">
       <div class="content-body">
