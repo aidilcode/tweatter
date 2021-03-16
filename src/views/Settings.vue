@@ -14,7 +14,7 @@
               accept="image/*"
               @change="getAvatarImage($event)"
             />
-            <img id="current-avatar" :src="state.userData.avatar" alt="">
+            <img id="current-avatar" :src="state.userData.avatar" alt="" />
             <div class="username">
               <contenteditable
                 tag="div"
@@ -23,15 +23,32 @@
                 :noNL="true"
                 :noHTML="true"
                 class="uname"
+                :class="{'--exceeded': unameLength > 10}"
               />
+              <p class="--exceeded text-sm" v-if="unameLength > 10">
+                length of username must be lower or equal 10 character
+              </p>
               <span>@{{ state.userData.username }}</span>
             </div>
           </div>
           <div class="bio">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium sapiente quas eveniet aperiam sit nam obcaecati quod officia. Quasi quia tempore molestiae nemo harum saepe veritatis sed, et eveniet voluptatibus.
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium
+            sapiente quas eveniet aperiam sit nam obcaecati quod officia. Quasi
+            quia tempore molestiae nemo harum saepe veritatis sed, et eveniet
+            voluptatibus.
           </div>
           <div class="submit-changes">
-            <button :class="{'submitting': submitting}" type="submit">save change</button>
+            <button
+              :disabled="state.submitting || unameLength > 10"
+              :class="{ submitting: state.submitting }"
+              type="submit"
+            >
+              <span v-if="state.submitting">
+                saving
+              </span>
+              <span v-else>save change</span>
+            </button>
+            <LoadingSpinner v-if="state.submitting" class="spin-loader" />
           </div>
         </form>
       </div>
@@ -41,37 +58,41 @@
 
 <script>
 import axiosInstance from "@/plugin/axios";
-import {reactive} from 'vue';
+import { reactive, computed } from "vue";
 import contenteditable from "vue-contenteditable";
 
-import Header from '../components/header/Header'
+import LoadingSpinner from "@/components/LoadingSpinner";
+import Header from "@/components/header/Header";
 
 export default {
   name: "Settings",
   components: {
     Header,
-    contenteditable
+    contenteditable,
+    LoadingSpinner,
   },
   data() {
     return {
       inSettingView: true,
-      submitting: false,
-    }
+    };
   },
   setup() {
     const state = reactive({
+      submitting: false,
       userData: {
         username: localStorage.getItem("username"),
         avatar: localStorage.getItem("avatar"),
       },
       changes: {
         avatar: "",
-        uname: localStorage.getItem("username")
-      }
+        uname: localStorage.getItem("username"),
+      },
     });
 
+    const unameLength = computed(() => state.changes.uname.length);
+
     async function saveChanges() {
-      this.submitting = true;
+      state.submitting = true;
       let formData = new FormData();
       let access = localStorage.getItem("access_token");
 
@@ -90,20 +111,27 @@ export default {
           "Content-Type": "application/json;charset=UTF-8",
         },
       })
-      .then((res) => {
-        localStorage.setItem("avatar", res.data.data.avatar);
-        localStorage.setItem("username", res.data.data.username);
-        this.submitting = false;
-      })
-      .catch((err) => {
-        console.error(err)
-      });
+        .then((res) => {
+          state.userData.username = res.data.data.username;
+          if (state.changes.avatar) {
+            state.userData.avatar = res.data.data.avatar;
+          }
+
+          localStorage.setItem("avatar", res.data.data.avatar);
+          localStorage.setItem("username", res.data.data.username);
+          state.submitting = false;
+        })
+        .catch(() => {
+          state.submitting = true;
+          alert("there is something wrong, try to refresh the page.");
+        });
     }
 
     return {
       state,
-      saveChanges
-    }
+      saveChanges,
+      unameLength,
+    };
   },
   methods: {
     getAvatarImage(e) {
@@ -111,11 +139,15 @@ export default {
       cav.src = URL.createObjectURL(e.target.files[0]);
       this.state.changes.avatar = e.target.files[0];
     },
-  }
-}
+  },
+};
 </script>
 
 <style lang="scss" scoped>
+.spin-loader {
+  margin-left: 0.25rem;
+  transform: scale(0.7)
+}
 .wrapper {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -143,8 +175,10 @@ export default {
     img {
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
       border-radius: 100%;
-      width: 200px;
-      height: 200px;
+      min-width: 200px;
+      min-height: 200px;
+      max-width: 200px;
+      max-height: 200px;
     }
     .username {
       width: 100%;
@@ -162,6 +196,9 @@ export default {
         font-size: 1.2rem;
       }
     }
+    .--exceeded {
+      color: crimson !important;
+    }
   }
   .bio {
     color: #bbb;
@@ -174,6 +211,9 @@ export default {
   .submit-changes {
     position: absolute;
     bottom: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     button {
       color: #ddd;
       border-radius: 4px;

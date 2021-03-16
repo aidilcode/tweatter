@@ -6,7 +6,6 @@ const baseURL = 'https://tweatter-api.herokuapp.com/api/'
 const axiosInstance = axios.create({
   baseURL: baseURL,
   headers: {
-    // 'Access-Control-Allow-Origin': '*',
     Authorization: localStorage.getItem('access_token')
       ? 'JWT' + localStorage.getItem('access_token')
       : null,
