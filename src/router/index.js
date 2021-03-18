@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 // views
-import Home from '@/views/Home.vue'
 import UserProfile from '@/views/UserProfile'
-import Signin from '@/views/auth/Signin'
+import Home from '@/views/Home.vue'
 import Settings from '@/views/Settings'
-// import Signup from '../views/Signup'
+import Signup from '@/views/auth/Signup'
+import Signin from '@/views/auth/Signin'
 // component
 import Tweats from '@/components/tweats/Tweats'
 import TweatDetail from '@/components/tweats/TweatDetail'
@@ -17,6 +17,11 @@ const routes = [
     path: '/login',
     name: 'Signin',
     component: Signin,
+  },
+  {
+    path: '/join',
+    name: 'Signup',
+    component: Signup,
   },
   {
     path: '/',
@@ -61,12 +66,7 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: Settings
-  }
-  // {
-  //   path: '/signup',
-  //   name: 'Signup',
-  //   component: Signup,
-  // }
+  },
 ]
 
 const router = createRouter({

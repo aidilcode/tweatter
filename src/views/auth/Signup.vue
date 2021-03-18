@@ -2,10 +2,10 @@
   <div class="login-wrapper">
     <div class="image"></div>
     <div class="forms">
-      <div class="inner-loading" v-if="reciveData">
+      <div class="inner-loading" v-if="sendData">
         <LoadingSpinner />
         <div>
-          <span>wait for logging in ...</span>
+          <span>wait for us to proccess your information ...</span>
         </div>
       </div>
       <div class="inner" v-else>
@@ -13,7 +13,6 @@
           Content Information
         </h1>
         <div class="wrap">
-          <h3 class="text-3xl font-bold">Join Tweatter Today</h3>
           <form
             @submit.prevent="loginTweat"
             class="signin"
@@ -23,7 +22,7 @@
               type="email"
               name="email"
               id="email"
-              placeholder="me@mywebsite.com"
+              placeholder="me@gmail.com"
               v-model="inputEmail"
             />
             <input
@@ -33,13 +32,20 @@
               placeholder="************"
               v-model="inputPaswd"
             />
+            <input
+              type="username"
+              name="username"
+              id="username"
+              placeholder="your username"
+              v-model="inputUsername"
+            />
             <div class="buttons">
               <button type="submit">
-                <span class="text-xl font-semibold">Log in</span>
+                <span class="text-xl font-semibold">Join</span>
               </button>
               <div>
                 <a href="#">forgot password?</a>
-                <router-link to="/join">Sign up for Tweatter</router-link>
+                <router-link to="/login">already have account?</router-link>
               </div>
             </div>
           </form>
@@ -60,9 +66,10 @@ export default {
   },
   data() {
     return {
-      reciveData: false,
+      sendData: false,
       inputEmail: "",
       inputPaswd: "",
+      inputUsername: "",
       formError: false,
     };
   },
@@ -76,28 +83,23 @@ export default {
   },
   methods: {
     async loginTweat() {
-      this.reciveData = true;
+      this.sendData = true;
       const error = await axiosInstance
-        .post('token/', {
+        .post('register/', {
           email: this.inputEmail,
+          username: this.inputUsername,
           password: this.inputPaswd,
         })
-        .then((res) => {
-          localStorage.setItem("access_token", res.data.access);
-          localStorage.setItem("refresh_token", res.data.refresh);
-          localStorage.setItem("username", res.data.username);
-          localStorage.setItem("avatar", res.data.avatar);
-          localStorage.setItem("isLogin", true);
-          axiosInstance.defaults.headers["Authorization"] =
-            "Bearer " + localStorage.getItem("access_token");
+        .then(() => {
+          this.$router.push("/login");
         })
         .catch(() => {
           this.formError = true;
         });
 
       if (error == null) {
-        this.$router.push("/");
-        this.reciveData = false;
+        this.formError = true;
+        this.sendData = false;
       }
     },
   },
@@ -152,7 +154,7 @@ export default {
   .inner {
     color: #ddd;
     .wrap {
-      margin-top: 6rem;
+      margin-top: 4rem;
       .signin {
         display: flex;
         flex-direction: column;

@@ -13,12 +13,13 @@
           {{state.formErrorMsg}}
         </span>
         <contenteditable
+          id="content-form"
           data-ph="What's Happening? ..."
           tag="div"
           :contenteditable="state.isEditable"
           v-model="state.newTweatContent"
           :noNL="false"
-          :noHTML="true"
+          :noHTML="false"
         />
         <div
           class="tweat-image"
@@ -90,7 +91,7 @@ export default {
       var fktweat = '';
       var tmpicts = this.state.imageContent;
       // create fake tweat
-      fktweat = this.state.newTweatContent;
+      fktweat = document.getElementById("content-form").innerText;
       if (this.state.imageContent) {
         picture = URL.createObjectURL(this.state.imageContent)
       }
