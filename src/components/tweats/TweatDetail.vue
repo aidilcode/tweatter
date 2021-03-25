@@ -96,7 +96,6 @@ export default {
   },
   setup() {
     const route = useRoute()
-    const requestUser = route.params.username
     const requestIdis = route.params.id
 
     const state = reactive({
@@ -107,9 +106,10 @@ export default {
     async function tweatDetail() {
       const detail = await axiosInstance({
         method: "GET",
-        url: `${requestUser}/tweat/${requestIdis}`,
+        url: `tweat/${requestIdis}`,
       }).catch((err) => console.error(err));
 
+      console.log(detail.data.data);
       state.tweat = detail.data.data;
       state.reciveData = true;
     }

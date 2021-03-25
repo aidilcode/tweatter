@@ -117,7 +117,10 @@ export default {
         state.userTweats = res.data.results;
         state.next = res.data.next;
         state.reciveData = true;
+        return;
       }
+
+      alert("Something is wrong, try to reload the page.");
     }
 
     function moreOption(id) {

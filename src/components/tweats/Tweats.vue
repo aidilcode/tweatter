@@ -93,7 +93,8 @@ export default {
         })
         .catch((err) => {
           state.reciveData = false;
-          console.error(err)
+          console.error(err);
+          alert("Something is wrong, try to reload the page.");
         });
     }
 
