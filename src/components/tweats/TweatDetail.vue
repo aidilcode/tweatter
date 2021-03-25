@@ -109,8 +109,8 @@ export default {
         url: `tweat/${requestIdis}`,
       }).catch((err) => console.error(err));
 
-      console.log(detail.data.data);
-      state.tweat = detail.data.data;
+      // console.log(detail.data.data)
+      state.tweat = detail.data.data[0];
       state.reciveData = true;
     }
 
