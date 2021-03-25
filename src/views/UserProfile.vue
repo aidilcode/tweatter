@@ -133,13 +133,14 @@ export default {
       },
     });
 
-    async function fetchUserData() {
+    async function fetchUserData(username=null) {
       let access = localStorage.getItem("access_token");
       let reqUsr = route.params.username;
+      let unames = (username) ? username : reqUsr;
 
       const response = await axiosInstance({
         method: "GET",
-        url: `${reqUsr}`,
+        url: `${unames}`,
         headers: {
           Authorization: `Bearer ${access}`,
           "Content-Type": "application/json;charset=UTF-8",
@@ -151,9 +152,9 @@ export default {
       if (typeof response === "object") {
         state.userData.username = response.data.data.username;
         state.userData.avatar = response.data.data.avatar;
-        state.links.tweat = `/${reqUsr}`;
-        state.links.media = `/${reqUsr}/media`;
-        state.links.likes = `/${reqUsr}/likes`;
+        state.links.tweat = `/${unames}`;
+        state.links.media = `/${unames}/media`;
+        state.links.likes = `/${unames}/likes`;
       } else {
         state.requestError.error = true;
       }
@@ -169,7 +170,6 @@ export default {
   },
   methods: {
     getAvatarImage(e) {
-      console.log(e.target.files);
       let cav = document.getElementById("current-avatar");
       cav.src = URL.createObjectURL(e.target.files[0]);
     },
@@ -177,6 +177,10 @@ export default {
   watch: {
     $route(to) {
       this.state.inTab = to.fullPath.split("/").pop().toString();
+      console.log(to.params.username, localStorage.getItem('username'))
+      if (to.params.username == localStorage.getItem('username')) {
+        this.fetchUserData(to.params.username);
+      }
     },
   },
 };

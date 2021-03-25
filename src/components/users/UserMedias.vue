@@ -1,12 +1,12 @@
 <template>
   <LoadingSpinner v-if="!state.reciveData" class="spin-loader" />
-  <div class="tweat" v-for="tweat in state.userTweats" :key="tweat.id">
+  <div class="tweat" v-for="tweat in state.userMedias" :key="tweat.id">
     <div class="author-wrapper">
       <div class="info">
         <div class="img">
-          <img :src="tweat.author__avatar_url" alt="" width="30" height="30" />
+          <img :src="tweat.author.avatar_url" alt="" width="30" height="30" />
         </div>
-        <span class="author font-medium">{{ tweat.author__username }}</span>
+        <span class="author font-medium">{{ tweat.author.username }}</span>
       </div>
       <div
         class="dropdown"
@@ -52,12 +52,15 @@
       </div>
     </div>
   </div>
+  <div v-if="state.endOf.state" class="end-of">
+    {{ state.endOf.msg }}
+  </div>
 </template>
 
 <script>
-import { reactive } from 'vue'
-import { useRoute } from 'vue-router'
-import axiosInstance from '@/plugin/axios'
+import { reactive } from "vue";
+import { useRoute } from "vue-router";
+import axiosInstance from "@/plugin/axios";
 
 import LoadingSpinner from "@/components/LoadingSpinner";
 import FeatherMoreHorizontal from "@/components/icons/FeatherMoreHorizontal";
@@ -66,7 +69,7 @@ import FeatherHeart from "@/components/icons/FeatherHeart";
 import FeatherShare from "@/components/icons/FeatherShare";
 
 export default {
-  name: 'TweatItems',
+  name: "TweatItems",
   components: {
     FeatherMoreHorizontal,
     FeatherComments,
@@ -75,49 +78,71 @@ export default {
     LoadingSpinner,
   },
   setup() {
-    const route = useRoute()
-    const requestUser = route.params.username
+    const route = useRoute();
+    const requestUser = route.params.username;
 
     const state = reactive({
-      userTweats: [],
+      userMedias: [],
+      next: "",
+      endOf: {
+        state: false,
+        msg: "",
+      },
       reciveData: false,
-    })
+    });
 
-    async function fetchUserMedias() {
-      let access = localStorage.getItem('access_token')
+    async function fetchUserMedias(username = null) {
+      let access = localStorage.getItem("access_token");
+      let unames = username ? username : requestUser;
 
-      const response = await axiosInstance({
-        method: 'GET',
-        url: `${requestUser}/medias`,
+      const res = await axiosInstance({
+        method: "GET",
+        url: `${unames}/medias`,
         headers: {
           Authorization: `Bearer ${access}`,
           "Content-Type": "application/json;charset=UTF-8",
         },
       }).catch((err) => {
-        if (err.response.status == 400) {
-          console.error(err)
-        }
+        console.error(err);
       });
 
-      state.userTweats = response.data.data
-      state.reciveData = true
+      if (typeof res === "object") {
+        state.userMedias = res.data.results;
+        state.next = res.data.next;
+        state.reciveData = true;
+      }
     }
 
     function moreOption(id) {
       const DDbuttons = document.getElementById(`ddb-${id}`);
-      DDbuttons.classList.toggle("block")
+      DDbuttons.classList.toggle("block");
     }
 
     return {
       state,
       fetchUserMedias,
       moreOption,
-    }
+    };
   },
   async created() {
-    await this.fetchUserMedias()
+    await this.fetchUserMedias();
   },
   methods: {
+    loadMore: function () {
+      if (this.state.next === null) {
+        this.state.endOf.state = true;
+        this.state.endOf.msg = "No more content to show";
+        return;
+      }
+
+      axiosInstance({
+        method: "GET",
+        url: this.state.next,
+      }).then((res) => {
+        this.state.userMedias.push(...res.data.results);
+        this.state.next = res.data.next;
+      });
+    },
     async deleteTweat(id) {
       let access = localStorage.getItem("access_token");
 
@@ -130,13 +155,30 @@ export default {
         },
       }).catch((err) => {
         if (err.response.status == 400) {
-          console.error(err)
+          console.error(err);
         }
       });
 
       await this.fetchUserTweats();
-    }
-  }
+    },
+  },
+  mounted() {
+    let vm = this;
+    window.addEventListener("scroll", function () {
+      let scTop = this.document.documentElement.scrollTop;
+      let scHeight = this.document.documentElement.scrollHeight;
+      let scClient = this.document.documentElement.clientHeight;
+
+      if (scTop + scClient == scHeight && !vm.state.endOf.msg) {
+        vm.loadMore();
+      }
+    });
+  },
+  watch: {
+    $route(to) {
+      this.fetchUserMedias(to.params.username);
+    },
+  },
 };
 </script>
 
@@ -144,7 +186,7 @@ export default {
 .spin-loader {
   display: flex;
   justify-content: center;
-  margin-top: 1rem;;
+  margin-top: 1rem;
 }
 .tweat {
   cursor: pointer;
@@ -292,5 +334,12 @@ export default {
       }
     }
   }
+}
+.end-of {
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
+  margin-bottom: 2rem;
 }
 </style>

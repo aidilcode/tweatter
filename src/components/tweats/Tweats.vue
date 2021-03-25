@@ -9,25 +9,30 @@
     <section class="tforms">
       <TweatForm @created="emitFetchData" />
     </section>
-    <section class="tweats">
-      <LoadingSpinner v-if="!state.reciveData" class="spin-loader" />
+    <section
+      class="tweats"
+    >
+      <LoadingSpinner v-if="state.reciveData" class="spin-loader" />
       <router-link
         v-for="tweat in state.tweats"
         :key="tweat.id"
         :to="{
           name: 'TweatDetail',
-          params: { username: tweat.author__username, id: tweat.id },
+          params: { username: tweat.author.username, id: tweat.id },
         }"
       >
         <TweatItems
           :tweatId="tweat.id"
-          :author="tweat.author__username"
-          :authorAvatar="tweat.author__avatar_url"
+          :author="tweat.author.username"
+          :authorAvatar="tweat.author.avatar_url"
           :tweat="tweat.tweat"
           :pictureUrl="tweat.picture_url"
           :createdAt="tweat.created_at"
         />
       </router-link>
+      <div v-if="state.endOf.state" class="end-of">
+        {{state.endOf.msg}}
+      </div>
     </section>
   </div>
 </template>
@@ -51,8 +56,13 @@ export default {
     const state = reactive({
       username: localStorage.getItem("username"),
       tweats: [],
+      next: "",
       tweatsLeng: 0,
       reciveData: false,
+      endOf: {
+        state: false,
+        msg: ""
+      }
     });
 
     // will be called if there any emit
@@ -71,13 +81,20 @@ export default {
 
     // fetch all tweats from tweatter api
     async function fetchTweats() {
-      const tweatsAll = await axiosInstance({
+      state.reciveData = true;
+      await axiosInstance({
         method: "GET",
         url: "tweats/",
-      }).catch((err) => console.error(err));
-
-      state.tweats = tweatsAll.data.data;
-      state.reciveData = true;
+      })
+        .then((res) => {
+          state.reciveData = false;
+          state.tweats = res.data.results;
+          state.next = res.data.next;
+        })
+        .catch((err) => {
+          state.reciveData = false;
+          console.error(err)
+        });
     }
 
     return {
@@ -88,6 +105,38 @@ export default {
   },
   async created() {
     await this.fetchTweats();
+  },
+  methods: {
+    loadMore: function () {
+      if (this.state.next === null) {
+        this.state.endOf.state = true;
+        this.state.endOf.msg = "No more content to show";
+        return
+      }
+      this.state.reciveData = true;
+
+      axiosInstance({
+        method: "GET",
+        url: this.state.next,
+      })
+        .then((res) => {
+          this.state.reciveData = false;
+          this.state.tweats.push(...res.data.results);
+          this.state.next = res.data.next;
+        })
+    }
+  },
+  mounted() {
+    let vm = this;
+    window.addEventListener("scroll", function () {
+      let scTop = this.document.documentElement.scrollTop;
+      let scHeight = this.document.documentElement.scrollHeight;
+      let scClient = this.document.documentElement.clientHeight;
+
+      if (scTop + scClient == scHeight && !vm.state.endOf.msg) {
+        vm.loadMore();
+      }
+    })
   },
 };
 </script>
@@ -110,6 +159,13 @@ export default {
       display: flex;
       justify-content: center;
       margin-top: 1rem;
+    }
+    .end-of {
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      margin-top: 3rem;
+      margin-bottom: 2rem;
     }
   }
 }

@@ -4,12 +4,12 @@
     <div class="author-wrapper">
       <div class="info">
         <div class="img">
-          <img :src="tweat.author__avatar_url" alt="" width="30" height="30" />
+          <img :src="tweat.author.avatar_url" alt="" width="30" height="30" />
         </div>
-        <span class="author font-medium">{{ tweat.author__username }}</span>
+        <span class="author font-medium">{{ tweat.author.username }}</span>
       </div>
       <div
-        v-if="state.current == tweat.author__username"
+        v-if="state.current == tweat.author.username"
         class="dropdown"
         @click="moreOption(tweat.id)"
         :id="tweat.id"
@@ -27,7 +27,7 @@
     <router-link
       :to="{
         name: 'TweatDetail',
-        params: { username: tweat.author__username, id: tweat.id },
+        params: { username: tweat.author.username, id: tweat.id },
       }"
       class="content"
     >
@@ -58,6 +58,9 @@
       </div>
     </router-link>
   </div>
+  <div v-if="state.endOf.state" class="end-of">
+    {{ state.endOf.msg }}
+  </div>
 </template>
 
 <script>
@@ -87,28 +90,33 @@ export default {
     const state = reactive({
       userTweats: [],
       reciveData: false,
+      next: "",
+      endOf: {
+        state: false,
+        msg: "",
+      },
       current: localStorage.getItem("username"),
     });
 
-    async function fetchUserTweats() {
+    async function fetchUserTweats(username = null) {
       let access = localStorage.getItem("access_token");
+      let unames = username ? username : requestUser;
 
-      const response = await axiosInstance({
+      const res = await axiosInstance({
         method: "GET",
-        url: `${requestUser}/tweats`,
+        url: `${unames}/tweats`,
         headers: {
           Authorization: `Bearer ${access}`,
           "Content-Type": "application/json;charset=UTF-8",
         },
       }).catch((err) => {
-        console.log("in user tweat", err.response)
+        console.log("in user tweat", err.response);
       });
 
-      if (typeof response === 'object') {
-        state.userTweats = response.data.data;
+      if (typeof res === "object") {
+        state.userTweats = res.data.results;
+        state.next = res.data.next;
         state.reciveData = true;
-      } else {
-        window.location.href = window.location;
       }
     }
 
@@ -127,6 +135,21 @@ export default {
     await this.fetchUserTweats();
   },
   methods: {
+    loadMore: function () {
+      if (this.state.next === null) {
+        this.state.endOf.state = true;
+        this.state.endOf.msg = "No more content to show";
+        return;
+      }
+
+      axiosInstance({
+        method: "GET",
+        url: this.state.next,
+      }).then((res) => {
+        this.state.userTweats.push(...res.data.results);
+        this.state.next = res.data.next;
+      });
+    },
     async deleteTweat(id) {
       let access = localStorage.getItem("access_token");
 
@@ -147,6 +170,23 @@ export default {
       });
 
       await this.fetchUserTweats();
+    },
+  },
+  mounted() {
+    let vm = this;
+    window.addEventListener("scroll", function () {
+      let scTop = this.document.documentElement.scrollTop;
+      let scHeight = this.document.documentElement.scrollHeight;
+      let scClient = this.document.documentElement.clientHeight;
+
+      if (scTop + scClient == scHeight && !vm.state.endOf.msg) {
+        vm.loadMore();
+      }
+    });
+  },
+  watch: {
+    $route(to) {
+      this.fetchUserTweats(to.params.username);
     },
   },
 };
@@ -304,5 +344,12 @@ export default {
       }
     }
   }
+}
+.end-of {
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
+  margin-bottom: 2rem;
 }
 </style>

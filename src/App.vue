@@ -13,6 +13,10 @@ export default {
   margin: 0;
   outline: none !important;
 }
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #ddd #222;
+}
 body {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
