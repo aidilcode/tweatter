@@ -8,9 +8,9 @@
       <div class="content-tweat">
         <span
           class="no-err"
-          :class="{'form-error': state.formErrorType == 'form-error'}"
+          :class="{ 'form-error': state.formErrorType == 'form-error' }"
         >
-          {{state.formErrorMsg}}
+          {{ state.formErrorMsg }}
         </span>
         <contenteditable
           id="content-form"
@@ -44,14 +44,15 @@
       </div>
     </form>
     <div class="divider"></div>
+    {{ state.jada }}
   </div>
 </template>
 
 <script>
+import contenteditable from "vue-contenteditable";
 import axiosInstance from "@/plugin/axios";
 
 import FeatherImage from "../icons/FeatherImage";
-import contenteditable from "vue-contenteditable";
 import { reactive, computed } from "vue";
 
 export default {
@@ -70,6 +71,11 @@ export default {
       newTweatContent: "",
       contentImage: "",
       emitData: "",
+
+      error: {
+        stt: false,
+        msg: "",
+      },
     });
 
     const newTweatCharCount = computed(() => state.newTweatContent.length);
@@ -87,39 +93,30 @@ export default {
       this.$refs.setTweatImage.src = URL.createObjectURL(event.target.files[0]);
     },
     async createNewTweat() {
-      var picture = '';
-      var fktweat = '';
-      var tmpicts = this.state.imageContent;
-      // create fake tweat
-      fktweat = document.getElementById("content-form").innerText;
-      if (this.state.imageContent) {
-        picture = URL.createObjectURL(this.state.imageContent)
+      const _tweat = document.getElementById("content-form").innerText;
+      const _cover = this.state.imageContent;
+      var _picture = this.state.imageContent;
+      // tweat or the image from form is empty, raise error message
+      if (_cover == "" && _tweat == "") {
+        this.state.error.stt = true;
+        this.state.error.msg = "tweat or image can't be empty";
+        return;
       }
 
-      if (fktweat == "" && tmpicts == "") {
-        this.state.formErrorMsg = "tweat or image can't be empty"
-        this.state.formErrorType = 'form-error'
-      } else {
-        this.state.newTweatContent = '';
-        this.state.imageContent = '';
-        this.state.emitData = {
-          author__username: localStorage.getItem("username"),
-          author__avatar_url: localStorage.getItem("avatar"),
-          tweat: fktweat,
-          picture_url: picture,
-          created_at: 0,
-        };
-        this.state.isHasImage = false;
-        // end of
+      // if the image is not empty, create object of it
+      // for commit data purpose to display it to the html
+      if (_picture != "") {
+        _picture = URL.createObjectURL(this.state.imageContent);
+      }
 
-        let formData = new FormData();
-        let access = localStorage.getItem("access_token");
+      // process post tweat
+      let access   = localStorage.getItem("access_token");
+      let formData = new FormData();
+      // datas to send
+      formData.append("tweat", _tweat);
+      formData.append("picture", _cover);
 
-        // append data
-        formData.append("tweat", fktweat);
-        formData.append("picture", tmpicts);
-
-        await axiosInstance({
+      await axiosInstance({
           method: "POST",
           url: "tweats/",
           data: formData,
@@ -127,15 +124,18 @@ export default {
             Authorization: `Bearer ${access}`,
             "Content-Type": "application/json;charset=UTF-8",
           },
-        }).catch((err) => {
+        })
+        .then(() => {
+          this.state.newTweatContent = "";
+          this.state.imageContent = "";
+          this.$emit("created");
+        })
+        .catch((err) => {
           if (err.response.status == 400) {
-            this.state.formErrorMsg = 'max uplaod image size is 3Mb'
-            this.state.formErrorType = 'form-error'
+            this.state.formErrorMsg = "max uplaod image size is 3Mb";
+            this.state.formErrorType = "form-error";
           }
         });
-
-        this.$emit('created', this.state.emitData);
-      }
     },
   },
 };

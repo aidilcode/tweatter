@@ -65,20 +65,6 @@ export default {
       }
     });
 
-    // will be called if there any emit
-    // from TweatForm component, and update
-    // the current tweats (insert the new tweats to the array)
-    async function emitFetchData(emit) {
-      state.tweats.unshift({
-        id: emit.id,
-        author__username: emit.author__username,
-        author__avatar_url: emit.author__avatar_url,
-        tweat: emit.tweat,
-        picture_url: emit.picture_url,
-        created_at: emit.created_at,
-      });
-    }
-
     // fetch all tweats from tweatter api
     async function fetchTweats() {
       state.reciveData = true;
@@ -96,6 +82,13 @@ export default {
           console.error(err);
           alert("Something is wrong, try to reload the page.");
         });
+    }
+
+    // will be called if there any emit
+    // from TweatForm component, and update
+    // the current tweats (insert the new tweats to the array)
+    async function emitFetchData() {
+      await fetchTweats();
     }
 
     return {
