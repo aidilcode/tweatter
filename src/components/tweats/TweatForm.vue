@@ -3,7 +3,10 @@
     <form
       class="create-tweat"
       @submit.prevent="createNewTweat"
-      :class="{ '--exceeded': newTweatCharCount > 255 }"
+      :class="[
+        { '--exceeded': newTweatCharCount > 255 },
+        { 'process-tweat': state.isProcessed },
+      ]"
     >
       <div class="content-tweat">
         <span
@@ -44,7 +47,6 @@
       </div>
     </form>
     <div class="divider"></div>
-    {{ state.jada }}
   </div>
 </template>
 
@@ -76,6 +78,7 @@ export default {
         stt: false,
         msg: "",
       },
+      isProcessed: false,
     });
 
     const newTweatCharCount = computed(() => state.newTweatContent.length);
@@ -93,6 +96,7 @@ export default {
       this.$refs.setTweatImage.src = URL.createObjectURL(event.target.files[0]);
     },
     async createNewTweat() {
+      this.state.isProcessed = true;
       const _tweat = document.getElementById("content-form").innerText;
       const _cover = this.state.imageContent;
       var _picture = this.state.imageContent;
@@ -126,8 +130,10 @@ export default {
           },
         })
         .then(() => {
+          this.state.isProcessed = false;
           this.state.newTweatContent = "";
           this.state.imageContent = "";
+          this.$refs.setTweatImage.src = "";
           this.$emit("created");
         })
         .catch((err) => {
@@ -155,6 +161,10 @@ export default {
 .forms {
   width: 100%;
   padding: 1rem 0 1rem 0;
+  .process-tweat {
+    transition: 0.3s ease-in-out;
+    border-color: #34d399 !important;
+  }
   .create-tweat {
     color: rgb(143, 143, 143, 0.5) !important;
     padding: 1rem;
