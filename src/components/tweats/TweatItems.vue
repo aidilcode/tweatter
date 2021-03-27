@@ -37,9 +37,7 @@
           :class="{ liked: likes.includes(username) }"
           @click="likeTweat(id)"
         />
-        <span :id="'like-' + id">{{
-          format(likes_count)
-        }}</span>
+        <span :id="'like-' + id">{{ format(likes_count) }}</span>
       </div>
       <div class="shares">
         <FeatherShare />
@@ -107,7 +105,7 @@ export default {
       return Math.round(n * prec) / prec;
     },
     format(n) {
-      if (n == "") return ""
+      if (n == "") return "";
       var abbrev = "kmb";
       var base = Math.floor(Math.log(Math.abs(n)) / Math.log(1000));
       var suffix = abbrev[Math.min(2, base - 1)];
@@ -125,8 +123,8 @@ export default {
       var elm = document.getElementById(`like-${id}`);
       var ilm = document.getElementById(`isliked-${id}`);
       var url = `tweat/like/${id}`; // default like url
-      var numdis
-      var numlik
+      var numdis;
+      var numlik;
 
       if (ilm.classList.contains("liked")) {
         url = `tweat/dislike/${id}`;

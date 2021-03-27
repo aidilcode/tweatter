@@ -1,29 +1,6 @@
 <template>
   <LoadingSpinner v-if="!state.reciveData" class="spin-loader" />
   <div class="tweat" v-for="tweat in state.userTweats" :key="tweat.id">
-    <div class="author-wrapper">
-      <div class="info">
-        <div class="img">
-          <img :src="tweat.author.avatar_url" alt="" width="30" height="30" />
-        </div>
-        <span class="author font-medium">{{ tweat.author.username }}</span>
-      </div>
-      <div
-        v-if="state.current == tweat.author.username"
-        class="dropdown"
-        @click="moreOption(tweat.id)"
-        :id="tweat.id"
-        style="float: right"
-      >
-        <button class="dropbtn">
-          <FeatherMoreHorizontal />
-        </button>
-        <div class="dropdown-content" :id="'ddb-' + tweat.id">
-          <div @click="deleteTweat(tweat.id)">delete</div>
-          <div>archive</div>
-        </div>
-      </div>
-    </div>
     <router-link
       :to="{
         name: 'TweatDetail',
@@ -31,32 +8,52 @@
       }"
       class="content"
     >
+      <div class="author-wrapper">
+        <div class="info">
+          <div class="img">
+            <img :src="tweat.author.avatar_url" alt="" width="30" height="30" />
+          </div>
+          <span class="author font-medium">{{ tweat.author.username }}</span>
+        </div>
+        <div
+          v-if="state.current == tweat.author.username"
+          class="dropdown"
+          @click="moreOption(tweat.id)"
+          :id="tweat.id"
+          style="float: right"
+        >
+          <button class="dropbtn">
+            <FeatherMoreHorizontal />
+          </button>
+          <div class="dropdown-content" :id="'ddb-' + tweat.id">
+            <div @click="deleteTweat(tweat.id)">delete</div>
+            <div>archive</div>
+          </div>
+        </div>
+      </div>
       <div class="content-body">
         {{ tweat.tweat }}
       </div>
       <div v-if="tweat.picture_url" class="content-image">
         <img :src="tweat.picture_url" alt="" srcset="" />
       </div>
-      <div class="content-repr">
-        <div class="comments">
-          <div class="inner">
-            <FeatherComments />
-            <span class="comment-count"></span>
-          </div>
-        </div>
-        <div class="like">
-          <div class="inner">
-            <FeatherHeart />
-            <span class="likes-count"></span>
-          </div>
-        </div>
-        <div class="share">
-          <div class="inner">
-            <FeatherShare />
-          </div>
-        </div>
-      </div>
     </router-link>
+    <div class="content-repr">
+      <div class="comments">
+        <FeatherComments />
+      </div>
+      <div class="likes">
+        <FeatherHeart
+          :id="'isliked-' + tweat.id"
+          :class="{ liked: tweat.likes.includes(state.current) }"
+          @click="likeTweat(tweat.id)"
+        />
+        <span :id="'like-' + tweat.id">{{ format(tweat.likes_count) }}</span>
+      </div>
+      <div class="shares">
+        <FeatherShare />
+      </div>
+    </div>
   </div>
   <div v-if="state.endOf.state" class="end-of">
     {{ state.endOf.msg }}
@@ -110,7 +107,7 @@ export default {
           "Content-Type": "application/json;charset=UTF-8",
         },
       }).catch((err) => {
-        console.log("in user tweat", err.response);
+        console.error(err);
       });
 
       if (typeof res === "object") {
@@ -123,21 +120,68 @@ export default {
       alert("Something is wrong, try to reload the page.");
     }
 
-    function moreOption(id) {
-      const DDbuttons = document.getElementById(`ddb-${id}`);
-      DDbuttons.classList.toggle("block");
-    }
-
     return {
       state,
       fetchUserTweats,
-      moreOption,
     };
   },
   async created() {
     await this.fetchUserTweats();
   },
   methods: {
+    nround(n, precision) {
+      var prec = Math.pow(10, precision);
+      return Math.round(n * prec) / prec;
+    },
+    format(n) {
+      if (n == "") return "";
+      var abbrev = "kmb";
+      var base = Math.floor(Math.log(Math.abs(n)) / Math.log(1000));
+      var suffix = abbrev[Math.min(2, base - 1)];
+      base = abbrev.indexOf(suffix) + 1;
+      return suffix
+        ? this.nround(n / Math.pow(1000, base), 2) + suffix
+        : "" + n;
+    },
+    moreOption(id) {
+      const DDbuttons = document.getElementById(`ddb-${id}`);
+      DDbuttons.classList.toggle("block");
+    },
+    async likeTweat(id) {
+      let access = localStorage.getItem("access_token");
+      var elm = document.getElementById(`like-${id}`);
+      var ilm = document.getElementById(`isliked-${id}`);
+      var url = `tweat/like/${id}`; // default like url
+      var numdis;
+      var numlik;
+
+      if (ilm.classList.contains("liked")) {
+        url = `tweat/dislike/${id}`;
+        ilm.classList.remove("liked");
+
+        numdis = Number(elm.innerText) - 1;
+        if (numdis == 0) numdis = "";
+        elm.innerText = numdis;
+      } else {
+        ilm.classList.add("liked");
+
+        if (numlik == "") {
+          numlik = 1;
+        } else {
+          numlik = Number(elm.innerText) + 1;
+        }
+        elm.innerText = numlik;
+      }
+
+      await axiosInstance({
+        method: "GET",
+        url: url,
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      }).catch((err) => console.error(err));
+    },
     loadMore: function () {
       if (this.state.next === null) {
         this.state.endOf.state = true;
@@ -304,46 +348,64 @@ export default {
       font-size: 0.925em;
       margin-top: 1rem;
     }
-    .content-repr {
+  }
+  .content-repr {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    div {
       display: flex;
-      margin-top: 1rem;
-      svg {
-        transform: scale(0.9);
-        stroke: rgb(148, 148, 148);
+      .liked {
+        fill: crimson;
+        stroke: crimson;
       }
-      div {
-        width: 6rem;
-        cursor: pointer;
-        display: inline-block;
-        span {
-          margin-left: 0.5rem;
-          font-size: 0.75em;
-        }
-        .inner {
-          display: flex;
-          align-items: center;
-        }
-      }
-      div:not(:last-child) {
-        margin-right: 6rem;
-      }
-      .comments:hover {
-        color: #34d399;
-        svg {
-          stroke: #34d399;
-        }
-      }
-      .like:hover {
+      .liked + span {
         color: crimson;
-        svg {
-          stroke: crimson;
-        }
       }
-      .share:hover {
+      svg {
+        stroke: rgb(60, 60, 60);
+        transition: 0.2s ease-in-out;
+        transform: scale(1.5);
+        padding: 0.31rem;
+        border-radius: 100%;
+      }
+      span {
+        color: rgb(60, 60, 60);
+        transition: 0.2s ease-in-out;
+        margin-left: 0.65rem;
+      }
+    }
+    .comments {
+      svg:hover {
+        stroke: #34d399;
+        transition: 0.2s ease-in-out;
+        background-color: rgb(52, 211, 153, 0.1);
+      }
+      svg:hover + span {
+        transition: 0.2s ease-in-out;
         color: #34d399;
-        svg {
-          stroke: #34d399;
-        }
+      }
+    }
+    .likes {
+      svg:hover {
+        stroke: crimson;
+        transition: 0.2s ease-in-out;
+        background-color: rgba(220, 20, 60, 0.1);
+      }
+      svg:hover + span {
+        transition: 0.2s ease-in-out;
+        color: crimson;
+      }
+    }
+    .shares {
+      svg:hover {
+        stroke: #34d399;
+        transition: 0.2s ease-in-out;
+        background-color: rgb(52, 211, 153, 0.1);
+      }
+      svg:hover + span {
+        transition: 0.2s ease-in-out;
+        color: #34d399;
       }
     }
   }

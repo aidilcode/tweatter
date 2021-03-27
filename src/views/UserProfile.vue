@@ -146,7 +146,7 @@ export default {
           "Content-Type": "application/json;charset=UTF-8",
         },
       }).catch((err) => {
-        console.log("in user profile", err);
+        console.error(err);
       });
 
       if (typeof response === "object") {
@@ -177,7 +177,6 @@ export default {
   watch: {
     $route(to) {
       this.state.inTab = to.fullPath.split("/").pop().toString();
-      console.log(to.params.username, localStorage.getItem('username'))
       if (to.params.username == localStorage.getItem('username')) {
         this.fetchUserData(to.params.username);
       }
