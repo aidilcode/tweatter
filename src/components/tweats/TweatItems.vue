@@ -1,48 +1,56 @@
 <template>
   <div class="tweat mt-2">
-    <div class="author-wrapper">
-      <div class="info">
-        <div class="img">
-          <img :src="authorAvatar" alt="" width="30" height="30" />
-        </div>
-        <router-link
-          :to="{ name: 'UserProfile', params: { username: author } }"
-          class="author font-medium"
-          >{{ author }}</router-link
-        >
-      </div>
-    </div>
-    <div class="content">
-      <div class="content-body">
-        {{ tweat }}
-      </div>
-      <div v-if="pictureUrl" class="content-image">
-        <img :src="pictureUrl" alt="" srcset="" />
-      </div>
-      <div class="content-repr">
-        <div class="comments">
-          <div class="inner">
-            <FeatherComments />
-            <span class="comment-count"></span>
+    <router-link
+      :to="{
+        name: 'TweatDetail',
+        params: { username: author, id: id },
+      }"
+    >
+      <div class="author-wrapper">
+        <div class="info">
+          <div class="img">
+            <img :src="authorAvatar" alt="" width="30" height="30" />
           </div>
+          <router-link
+            :to="{ name: 'UserProfile', params: { username: author } }"
+            class="author font-medium"
+            >{{ author }}</router-link
+          >
         </div>
-        <div class="like">
-          <div class="inner">
-            <FeatherHeart />
-            <span class="likes-count"></span>
-          </div>
+      </div>
+      <div class="content">
+        <div class="content-body">
+          {{ tweat }}
         </div>
-        <div class="share">
-          <div class="inner">
-            <FeatherShare />
-          </div>
+        <div v-if="pictureUrl" class="content-image">
+          <img :src="pictureUrl" alt="" srcset="" />
         </div>
+      </div>
+    </router-link>
+    <div class="content-repr">
+      <div class="comments">
+        <FeatherComments />
+      </div>
+      <div class="likes">
+        <FeatherHeart
+          :id="'isliked-' + id"
+          :class="{ liked: likes.includes(username) }"
+          @click="likeTweat(id)"
+        />
+        <span v-if="likes_count" :id="'like-' + id">{{
+          format(likes_count)
+        }}</span>
+      </div>
+      <div class="shares">
+        <FeatherShare />
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import axiosInstance from "@/plugin/axios";
+
 // import FeatherMoreHorizontal from "@/components/icons/FeatherMoreHorizontal";
 import FeatherComments from "@/components/icons/FeatherComments";
 import FeatherHeart from "@/components/icons/FeatherHeart";
@@ -57,13 +65,21 @@ export default {
     FeatherShare,
   },
   props: {
-    tweatId: String,
+    id: String,
     author: {
       type: String,
       required: true,
     },
     tweat: {
       type: String,
+      required: true,
+    },
+    likes_count: {
+      type: Number,
+      required: true,
+    },
+    likes: {
+      type: Object,
       required: true,
     },
     authorAvatar: {
@@ -80,10 +96,52 @@ export default {
     },
     inUserView: Boolean,
   },
+  data() {
+    return {
+      username: localStorage.getItem("username"),
+    };
+  },
   methods: {
+    nround(n, precision) {
+      var prec = Math.pow(10, precision);
+      return Math.round(n * prec) / prec;
+    },
+    format(n) {
+      var abbrev = "kmb";
+      var base = Math.floor(Math.log(Math.abs(n)) / Math.log(1000));
+      var suffix = abbrev[Math.min(2, base - 1)];
+      base = abbrev.indexOf(suffix) + 1;
+      return suffix
+        ? this.nround(n / Math.pow(1000, base), 2) + suffix
+        : "" + n;
+    },
     moreOption(id) {
       const DDbuttons = document.getElementById(`ddb-${id}`);
       DDbuttons.classList.toggle("block");
+    },
+    async likeTweat(id) {
+      let access = localStorage.getItem("access_token");
+      var elm = document.getElementById(`like-${id}`);
+      var ilm = document.getElementById(`isliked-${id}`);
+      var url = `tweat/like/${id}`; // default like url
+
+      if (ilm.classList.contains("liked")) {
+        url = `tweat/dislike/${id}`;
+        ilm.classList.remove("liked");
+        elm.innerText = Number(elm.innerText) - 1;
+      } else {
+        elm.innerText = Number(elm.innerText) + 1;
+        ilm.classList.add("liked");
+      }
+
+      await axiosInstance({
+        method: "GET",
+        url: url,
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      }).catch((err) => console.error(err));
     },
   },
 };
@@ -201,7 +259,7 @@ export default {
       font-size: 0.925em;
       margin-top: 1rem;
     }
-    .content-repr {
+    .content-repr-2 {
       display: flex;
       margin-top: 1rem;
       svg {
@@ -241,6 +299,66 @@ export default {
         svg {
           stroke: #34d399;
         }
+      }
+    }
+  }
+  .content-repr {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    div {
+      display: flex;
+      .liked {
+        fill: crimson;
+        stroke: crimson;
+      }
+      .liked + span {
+        color: crimson;
+      }
+      svg {
+        stroke: rgb(60, 60, 60);
+        transition: 0.2s ease-in-out;
+        transform: scale(1.5);
+        padding: 0.31rem;
+        border-radius: 100%;
+      }
+      span {
+        color: rgb(60, 60, 60);
+        transition: 0.2s ease-in-out;
+        margin-left: 0.65rem;
+      }
+    }
+    .comments {
+      svg:hover {
+        stroke: #34d399;
+        transition: 0.2s ease-in-out;
+        background-color: rgb(52, 211, 153, 0.1);
+      }
+      svg:hover + span {
+        transition: 0.2s ease-in-out;
+        color: #34d399;
+      }
+    }
+    .likes {
+      svg:hover {
+        stroke: crimson;
+        transition: 0.2s ease-in-out;
+        background-color: rgba(220, 20, 60, 0.1);
+      }
+      svg:hover + span {
+        transition: 0.2s ease-in-out;
+        color: crimson;
+      }
+    }
+    .shares {
+      svg:hover {
+        stroke: #34d399;
+        transition: 0.2s ease-in-out;
+        background-color: rgb(52, 211, 153, 0.1);
+      }
+      svg:hover + span {
+        transition: 0.2s ease-in-out;
+        color: #34d399;
       }
     }
   }

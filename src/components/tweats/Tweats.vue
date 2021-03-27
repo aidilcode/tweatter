@@ -13,23 +13,18 @@
       class="tweats"
     >
       <LoadingSpinner v-if="state.reciveData" class="spin-loader" />
-      <router-link
-        v-for="tweat in state.tweats"
-        :key="tweat.id"
-        :to="{
-          name: 'TweatDetail',
-          params: { username: tweat.author.username, id: tweat.id },
-        }"
-      >
         <TweatItems
-          :tweatId="tweat.id"
+          v-for="tweat in state.tweats"
+          :key="tweat.id"
+          :id="tweat.id"
           :author="tweat.author.username"
           :authorAvatar="tweat.author.avatar_url"
           :tweat="tweat.tweat"
+          :likes="tweat.likes"
+          :likes_count="tweat.likes_count"
           :pictureUrl="tweat.picture_url"
           :createdAt="tweat.created_at"
         />
-      </router-link>
       <div v-if="state.endOf.state" class="end-of">
         {{state.endOf.msg}}
       </div>
