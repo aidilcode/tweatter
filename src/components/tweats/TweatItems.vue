@@ -37,7 +37,7 @@
           :class="{ liked: likes.includes(username) }"
           @click="likeTweat(id)"
         />
-        <span v-if="likes_count" :id="'like-' + id">{{
+        <span :id="'like-' + id">{{
           format(likes_count)
         }}</span>
       </div>
@@ -107,6 +107,7 @@ export default {
       return Math.round(n * prec) / prec;
     },
     format(n) {
+      if (n == "") return ""
       var abbrev = "kmb";
       var base = Math.floor(Math.log(Math.abs(n)) / Math.log(1000));
       var suffix = abbrev[Math.min(2, base - 1)];
@@ -124,14 +125,25 @@ export default {
       var elm = document.getElementById(`like-${id}`);
       var ilm = document.getElementById(`isliked-${id}`);
       var url = `tweat/like/${id}`; // default like url
+      var numdis
+      var numlik
 
       if (ilm.classList.contains("liked")) {
         url = `tweat/dislike/${id}`;
         ilm.classList.remove("liked");
-        elm.innerText = Number(elm.innerText) - 1;
+
+        numdis = Number(elm.innerText) - 1;
+        if (numdis == 0) numdis = "";
+        elm.innerText = numdis;
       } else {
-        elm.innerText = Number(elm.innerText) + 1;
         ilm.classList.add("liked");
+
+        if (numlik == "") {
+          numlik = 1;
+        } else {
+          numlik = Number(elm.innerText) + 1;
+        }
+        elm.innerText = numlik;
       }
 
       await axiosInstance({
