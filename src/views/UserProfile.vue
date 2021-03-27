@@ -7,18 +7,9 @@
         <div class="inner">
           <div class="user-top">
             <div>
-              <label for="avatar-input"></label>
-              <input
-                class="change-avatar"
-                type="file"
-                name="avatar"
-                id="avatar-input"
-                accept="image/*"
-                @change="getAvatarImage($event)"
-              />
               <img
                 id="current-avatar"
-                :src="state.userData.avatar"
+                src="state.userData.avatar"
                 alt=""
                 srcset=""
               />
@@ -167,12 +158,6 @@ export default {
   },
   async created() {
     await this.fetchUserData();
-  },
-  methods: {
-    getAvatarImage(e) {
-      let cav = document.getElementById("current-avatar");
-      cav.src = URL.createObjectURL(e.target.files[0]);
-    },
   },
   watch: {
     $route(to) {
