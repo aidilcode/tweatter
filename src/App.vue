@@ -14,6 +14,7 @@ export default {
   outline: none !important;
 }
 html {
+  scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: #ddd #222;
 }

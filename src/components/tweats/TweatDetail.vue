@@ -2,7 +2,7 @@
   <div class="tweat-detail">
     <div class="top-return">
       <div class="return-back">
-        <router-link to="/">
+        <router-link :to="prevRoute">
           <FeatherArrowLeft />
         </router-link>
       </div>
@@ -91,7 +91,7 @@ export default {
   },
   data() {
     return {
-      prevRoute: null
+      prevRoute: "/"
     }
   },
   setup() {
@@ -130,7 +130,7 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next(vm => {
-      vm.prevRoute = from
+      vm.prevRoute = from.fullPath
     })
   },
 }

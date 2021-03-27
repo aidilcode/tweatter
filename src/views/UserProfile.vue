@@ -1,7 +1,19 @@
 <template>
   <div class="user-profile">
     <Header :user="state.userData" :inUserView="state.inUserView" />
-    <div class="user-wrapper">
+    <div class="user-wrapper" id="go-top">
+      <div class="topnav">
+        <div class="wrapper">
+          <div class="return-back">
+            <router-link to="/">
+              <FeatherArrowLeft />
+            </router-link>
+          </div>
+          <p>
+            <a href="#go-top">{{state.userData.username}}</a>
+          </p>
+        </div>
+      </div>
       <div class="user-porfile">
         <div class="background-cover"></div>
         <div class="inner">
@@ -9,7 +21,7 @@
             <div>
               <img
                 id="current-avatar"
-                src="state.userData.avatar"
+                :src="state.userData.avatar"
                 alt=""
                 srcset=""
               />
@@ -22,37 +34,47 @@
       </div>
       <div class="tabs-wrapper">
         <div class="tabs">
-          <router-link
-            :class="{
-              active:
-                state.inTab == 'tweat' ||
-                state.inTab == state.userData.username,
-            }"
-            :to="state.links.tweat"
-            >tweats
-          </router-link>
-          <router-link
-            :class="{ active: state.inTab == 'replies' }"
-            :to="state.links.tweat"
-            >replies
-          </router-link>
-          <router-link
-            :class="{ active: state.inTab == 'media' }"
-            :to="state.links.media"
-            >media
-          </router-link>
-          <router-link
-            :class="{ active: state.inTab == 'likes' }"
-            :to="state.links.likes"
-            >likes
-          </router-link>
+          <div>
+            <router-link
+              :class="{
+                active:
+                  thisTab == 'tweat' ||
+                  thisTab == state.userData.username,
+              }"
+              :to="state.links.tweat"
+              >tweats
+            </router-link>
+          </div>
+          <div>
+            <router-link
+              :class="{ active: thisTab == 'replies' }"
+              :to="state.links.tweat"
+              >replies
+            </router-link>
+          </div>
+          <div>
+            <router-link
+              :class="{ active: thisTab == 'media' }"
+              :to="state.links.media"
+              >media
+            </router-link>
+          </div>
+          <div>
+            <router-link
+              :class="{ active: thisTab == 'likes' }"
+              :to="state.links.likes"
+              >likes
+            </router-link>
+          </div>
         </div>
       </div>
       <div class="user-tweat-items" v-if="!state.requestError.error">
         <div class="suggested">
           <span class="font-medium">Suggested For You</span>
           <div class="inner">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat ea a sit laborum cumque quam id corrupti! Harum nam iure magnam nulla earum debitis repudiandae qui maxime, id inventore quis!
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat ea
+            a sit laborum cumque quam id corrupti! Harum nam iure magnam nulla
+            earum debitis repudiandae qui maxime, id inventore quis!
           </div>
         </div>
         <router-view />
@@ -94,18 +116,24 @@ import axiosInstance from "@/plugin/axios";
 
 import Header from "@/components/header/Header";
 import Sidebar from "@/components/header/Sidebar";
+import FeatherArrowLeft from "@/components/icons/FeatherArrowLeft";
 
 export default {
   name: "UserProfile",
   components: {
     Header,
     Sidebar,
+    FeatherArrowLeft,
+  },
+  data() {
+    return {
+      thisTab: "",
+    }
   },
   setup() {
     const route = useRoute();
 
     const state = reactive({
-      inTab: "tweat",
       userData: {
         username: "",
         avatar: "",
@@ -124,10 +152,10 @@ export default {
       },
     });
 
-    async function fetchUserData(username=null) {
+    async function fetchUserData(username = null) {
       let access = localStorage.getItem("access_token");
       let reqUsr = route.params.username;
-      let unames = (username) ? username : reqUsr;
+      let unames = username ? username : reqUsr;
 
       const response = await axiosInstance({
         method: "GET",
@@ -159,10 +187,36 @@ export default {
   async created() {
     await this.fetchUserData();
   },
+  mounted() {
+    var vm = this;
+    vm.thisTab = this.$route.fullPath.split("/").pop().toString();
+    /**
+     * Remove all `domain.com/#id` from url
+     */
+    //Get all the hyperlink elements
+    var links = document.getElementsByTagName("a");
+
+    //Browse the previously created array
+    Array.prototype.forEach.call(links, function (elem) {
+      //Get the hyperlink target and if it refers to an id go inside condition
+      var elemAttr = elem.getAttribute("href");
+      if (elemAttr && elemAttr.includes("#")) {
+        //Replace the regular action with a scrolling to target on click
+        elem.addEventListener("click", function (ev) {
+          ev.preventDefault();
+          //Scroll to the target element using replace() and regex to find the href's target id
+          document.getElementById(elemAttr.replace(/#/g, "")).scrollIntoView({
+            block: "start",
+            inline: "nearest",
+          });
+        });
+      }
+    });
+  },
   watch: {
     $route(to) {
-      this.state.inTab = to.fullPath.split("/").pop().toString();
-      if (to.params.username == localStorage.getItem('username')) {
+      this.thisTab = to.fullPath.split("/").pop().toString();
+      if (to.params.username == localStorage.getItem("username")) {
         this.fetchUserData(to.params.username);
       }
     },
@@ -178,6 +232,32 @@ export default {
 .user-wrapper {
   font-family: "Roboto", sans-serif;
   grid-column: span 6;
+  .topnav {
+    top: 0;
+    position: -webkit-sticky;
+    position: sticky;
+    z-index: 999;
+    background: #111;
+    margin: 0 3rem 0 3rem;
+    .wrapper {
+      padding: 1rem;
+      background-color: #111;
+      display: flex;
+      align-items: center;
+      border: 1px solid #222;
+      border-top: none;
+      svg {
+        transition: 0.2s ease-in-out;
+        stroke: #bbb;
+      }
+      p {
+        margin-left: 0.5rem;
+        font-weight: 600;
+        font-size: 1.3em;
+        color: #bbb;
+      }
+    }
+  }
   .user-porfile {
     padding-bottom: 8rem;
     margin: 0 3rem 0 3rem;
@@ -188,15 +268,15 @@ export default {
       z-index: -99;
       // position: absolute;
       width: auto;
-      height: 140px;
+      height: 170px;
       max-width: 586px;
-      max-height: 140px;
+      max-height: 170px;
       background-color: rgb(24, 24, 24);
     }
     .inner {
       z-index: 99;
       position: absolute;
-      top: 5rem;
+      top: 10rem;
       padding: 0 1.5rem 1.5rem 1.5rem;
       .user-top {
         display: flex;
@@ -233,24 +313,32 @@ export default {
   .tabs-wrapper {
     margin: 0 3rem 0 3rem;
     .tabs {
-      display: flex;
-      justify-content: space-around;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       border: 1px solid #222;
-      border-top: none !important;
+      // border-top: none !important;
+      height: 60px;
       .active {
+        transition: none !important;
         color: #34d399;
         border-bottom: 3px solid #34d399;
       }
-      a {
-        color: #ccc;
-        padding: 1rem 3.15rem 1rem 3.15rem;
-        cursor: pointer;
-        width: auto;
-        transition: 0.2s ease-in-out;
-        &:hover {
-          transition: 0.2s ease-in-out;
-          color: #34d399;
-          background-color: rgb(52, 211, 153, 0.1);
+      div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        a {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 1em;
+          width: 100%;
+          height: 100%;
+          &:hover {
+            transition: 0.2s ease-in-out;
+            color: #34d399;
+            background-color: rgb(52, 211, 153, 0.1);
+          }
         }
       }
     }
