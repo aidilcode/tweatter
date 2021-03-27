@@ -93,6 +93,7 @@ export default {
         msg: "",
       },
       current: localStorage.getItem("username"),
+      breakLoad: 0,
     });
 
     async function fetchUserTweats(username = null) {
@@ -189,13 +190,16 @@ export default {
         return;
       }
 
-      axiosInstance({
-        method: "GET",
-        url: this.state.next,
-      }).then((res) => {
-        this.state.userTweats.push(...res.data.results);
-        this.state.next = res.data.next;
-      });
+      if (this.state.breakLoad <= Date.now()) {
+        axiosInstance({
+          method: "GET",
+          url: this.state.next,
+        }).then((res) => {
+          this.state.breakLoad = Date.now() + 1000; // 1seconds
+          this.state.userTweats.push(...res.data.results);
+          this.state.next = res.data.next;
+        });
+      }
     },
     async deleteTweat(id) {
       let access = localStorage.getItem("access_token");

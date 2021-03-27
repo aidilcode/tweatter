@@ -57,7 +57,8 @@ export default {
       endOf: {
         state: false,
         msg: ""
-      }
+      },
+      breakLoad: 0,
     });
 
     // fetch all tweats from tweatter api
@@ -102,17 +103,18 @@ export default {
         this.state.endOf.msg = "No more content to show";
         return
       }
-      this.state.reciveData = true;
 
-      axiosInstance({
-        method: "GET",
-        url: this.state.next,
-      })
-        .then((res) => {
-          this.state.reciveData = false;
-          this.state.tweats.push(...res.data.results);
-          this.state.next = res.data.next;
+      if (this.state.breakLoad <= Date.now()) {
+        axiosInstance({
+          method: "GET",
+          url: this.state.next,
         })
+          .then((res) => {
+            this.state.breakLoad = Date.now() + 1000; // 1seconds
+            this.state.tweats.push(...res.data.results);
+            this.state.next = res.data.next;
+          })
+      }
     }
   },
   mounted() {
