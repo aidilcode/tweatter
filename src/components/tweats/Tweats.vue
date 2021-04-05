@@ -21,6 +21,7 @@
           :authorAvatar="tweat.author.avatar_url"
           :tweat="tweat.tweat"
           :likes="tweat.likes"
+          :comments_count="tweat.comments_count"
           :likes_count="tweat.likes_count"
           :pictureUrl="tweat.picture_url"
           :createdAt="tweat.created_at"

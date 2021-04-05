@@ -249,12 +249,23 @@ export default {
       svg {
         transition: 0.2s ease-in-out;
         stroke: #bbb;
+        border-radius: 50%;
+        transform: scale(1.5);
+        padding: 0.31rem;
+        &:hover {
+          stroke: #34d399;
+          transition: 0.2s ease-in-out;
+          background-color: rgb(52, 211, 153, 0.1);
+        }
       }
       p {
-        margin-left: 0.5rem;
+        margin-left: 0.75rem;
         font-weight: 600;
         font-size: 1.3em;
         color: #bbb;
+        a:hover {
+          text-decoration: underline;
+        }
       }
     }
   }
@@ -312,11 +323,11 @@ export default {
   }
   .tabs-wrapper {
     margin: 0 3rem 0 3rem;
+    color: #bbb;
     .tabs {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       border: 1px solid #222;
-      // border-top: none !important;
       height: 60px;
       .active {
         transition: none !important;

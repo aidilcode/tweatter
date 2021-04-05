@@ -6,58 +6,86 @@
           <FeatherArrowLeft />
         </router-link>
       </div>
-      <p>Tweat</p>
+      <p>
+        <router-link to="/">Tweat</router-link>
+      </p>
     </div>
     <LoadingSpinner v-if="!state.reciveData" class="spin-loader" />
     <div class="tweat" v-else>
       <div class="author-wrapper">
         <div class="info">
           <div class="img">
-            <img :src="state.tweat.author__avatar_url" alt="" width="30" height="30" />
+            <img
+              :src="state.detailed.author.avatar_url"
+              alt=""
+              width="30"
+              height="30"
+            />
           </div>
           <router-link
-            :to="{ name: 'UserProfile', params: { username: state.tweat.author__username } }"
+            :to="{
+              name: 'UserProfile',
+              params: { username: state.detailed.author.username },
+            }"
             class="author font-medium"
-            >{{ state.tweat.author__username }}</router-link
+            >{{ state.detailed.author.username }}</router-link
           >
         </div>
         <div
           class="dropdown"
-          @click="moreOption(state.tweat.id)"
-          :id="state.tweat.id"
+          @click="moreOption(state.detailed.id)"
+          :id="state.detailed.id"
           style="float: right"
         >
           <button class="dropbtn">
             <FeatherMoreHorizontal />
           </button>
-          <div class="dropdown-content" :id="'ddb-' + state.tweat.id">
+          <div class="dropdown-content" :id="'ddb-' + state.detailed.id">
             <div>report</div>
           </div>
         </div>
       </div>
       <div class="content">
         <div class="content-body">
-          {{ state.tweat.tweat }}
+          {{ state.detailed.tweat }}
         </div>
-        <div v-if="state.tweat.picture_url" class="content-image">
-          <img :src="state.tweat.picture_url" alt="" srcset="" />
+        <div v-if="state.detailed.picture_url" class="content-image">
+          <img :src="state.detailed.picture_url" alt="" srcset="" />
         </div>
         <div class="content-repr">
           <div class="comments">
-            <div class="inner">
-              <FeatherComments />
-              <span class="comment-count"></span>
-            </div>
+            <FeatherComments />
+            <span v-if="state.detailed.comments_count">{{
+              format(state.detailed.comments_count)
+            }}</span>
           </div>
-          <div class="like">
-            <div class="inner">
-              <FeatherHeart />
-              <span class="likes-count"></span>
-            </div>
+          <div class="likes">
+            <FeatherHeart
+              :id="'isliked-' + state.detailed.id"
+              :class="{ liked: state.detailed.likes.includes(state.current) }"
+              @click="likeTweat(state.detailed.id)"
+            />
+            <span :id="'like-' + state.detailed.id">{{
+              format(state.detailed.likes_count)
+            }}</span>
           </div>
-          <div class="share">
-            <div class="inner">
-              <FeatherShare />
+          <div class="shares">
+            <FeatherShare />
+          </div>
+        </div>
+        <div v-if="state.detailed.comments_count" class="thread-comments">
+          <div v-for="comment in state.detailed.comments" :key="comment.id" class="comment">
+            <div class="left">
+              <a href="">
+                <img :src="comment.user_avatar" />
+              </a>
+            </div>
+            <div class="right">
+              <p>
+                <a href="" class="username">{{comment.user}}</a>
+                <small>replying to @{{state.detailed.author.username}}</small>
+              </p>
+              <p class="content">{{comment.content}}</p>
             </div>
           </div>
         </div>
@@ -67,8 +95,8 @@
 </template>
 
 <script>
-import { reactive } from 'vue';
-import { useRoute } from 'vue-router'
+import { reactive } from "vue";
+import { useRoute } from "vue-router";
 import axiosInstance from "@/plugin/axios";
 
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -77,7 +105,6 @@ import FeatherComments from "@/components/icons/FeatherComments";
 import FeatherHeart from "@/components/icons/FeatherHeart";
 import FeatherShare from "@/components/icons/FeatherShare";
 import FeatherArrowLeft from "@/components/icons/FeatherArrowLeft";
-
 
 export default {
   name: "TweatDetail",
@@ -91,17 +118,18 @@ export default {
   },
   data() {
     return {
-      prevRoute: "/"
-    }
+      prevRoute: "/",
+    };
   },
   setup() {
-    const route = useRoute()
-    const requestIdis = route.params.id
+    const route = useRoute();
+    const requestIdis = route.params.id;
 
     const state = reactive({
-      tweat: {},
+      detailed: {},
       reciveData: false,
-    })
+      current: localStorage.getItem("username"),
+    });
 
     async function tweatDetail() {
       const detail = await axiosInstance({
@@ -109,31 +137,79 @@ export default {
         url: `tweat/${requestIdis}`,
       }).catch((err) => console.error(err));
 
-      // console.log(detail.data.data)
-      state.tweat = detail.data.data[0];
+      state.detailed = detail.data.data;
       state.reciveData = true;
     }
 
     return {
       state,
-      tweatDetail
-    }
+      tweatDetail,
+    };
   },
   methods: {
+    nround(n, precision) {
+      var prec = Math.pow(10, precision);
+      return Math.round(n * prec) / prec;
+    },
+    format(n) {
+      if (n == "") return "";
+      var abbrev = "kmb";
+      var base = Math.floor(Math.log(Math.abs(n)) / Math.log(1000));
+      var suffix = abbrev[Math.min(2, base - 1)];
+      base = abbrev.indexOf(suffix) + 1;
+      return suffix
+        ? this.nround(n / Math.pow(1000, base), 2) + suffix
+        : "" + n;
+    },
     moreOption(id) {
       const more = document.getElementById(`ddb-${id}`);
       more.classList.toggle("block");
+    },
+    async likeTweat(id) {
+      let access = localStorage.getItem("access_token");
+      var elm = document.getElementById(`like-${id}`);
+      var ilm = document.getElementById(`isliked-${id}`);
+      var url = `tweat/like/${id}`; // default like url
+      var numdis;
+      var numlik;
+
+      if (ilm.classList.contains("liked")) {
+        url = `tweat/dislike/${id}`;
+        ilm.classList.remove("liked");
+
+        numdis = Number(elm.innerText) - 1;
+        if (numdis == 0) numdis = "";
+        elm.innerText = numdis;
+      } else {
+        ilm.classList.add("liked");
+
+        if (numlik == "") {
+          numlik = 1;
+        } else {
+          numlik = Number(elm.innerText) + 1;
+        }
+        elm.innerText = numlik;
+      }
+
+      await axiosInstance({
+        method: "GET",
+        url: url,
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      }).catch((err) => console.error(err));
     },
   },
   async created() {
     await this.tweatDetail();
   },
   beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.prevRoute = from.fullPath
-    })
+    next((vm) => {
+      vm.prevRoute = from.fullPath;
+    });
   },
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -158,29 +234,29 @@ export default {
     border-top: none;
     .return-back {
       cursor: pointer;
-      border-radius: 50%;
-      padding: 0.5rem;
       display: inline-block;
-      transition: 0.2s ease-in-out;
       svg {
         transition: 0.2s ease-in-out;
-        stroke: #fff;
-      }
-      &:hover {
-        transition: 0.2s ease-in-out;
-        background-color: rgb(52, 211, 153, 0.1);
-        svg {
-          transition: 0.2s ease-in-out;
+        stroke: #bbb;
+        border-radius: 50%;
+        transform: scale(1.5);
+        padding: 0.31rem;
+        &:hover {
           stroke: #34d399;
+          transition: 0.2s ease-in-out;
+          background-color: rgb(52, 211, 153, 0.1);
         }
       }
     }
     p {
       cursor: pointer;
-      margin-left: 1rem;
       color: #fff;
+      margin-left: 0.75rem;
       font-weight: 600;
       font-size: 1.3em;
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
   .tweat {
@@ -292,44 +368,99 @@ export default {
         margin-top: 1rem;
       }
       .content-repr {
-        display: flex;
         margin-top: 1rem;
-        svg {
-          transform: scale(0.9);
-          stroke: rgb(148, 148, 148);
-        }
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         div {
-          width: 6rem;
-          cursor: pointer;
-          display: inline-block;
-          span {
-            margin-left: 0.5rem;
-            font-size: 0.75em;
-          }
-          .inner {
-            display: flex;
-            align-items: center;
-          }
-        }
-        div:not(:last-child) {
-          margin-right: 6rem;
-        }
-        .comments:hover {
-          color: #34d399;
-          svg {
-            stroke: #34d399;
-          }
-        }
-        .like:hover {
-          color: crimson;
-          svg {
+          display: flex;
+          .liked {
+            fill: crimson;
             stroke: crimson;
           }
-        }
-        .share:hover {
-          color: #34d399;
+          .liked + span {
+            color: crimson;
+          }
           svg {
+            stroke: rgb(60, 60, 60);
+            transition: 0.2s ease-in-out;
+            transform: scale(1.5);
+            padding: 0.31rem;
+            border-radius: 100%;
+          }
+          span {
+            color: rgb(60, 60, 60);
+            transition: 0.2s ease-in-out;
+            margin-left: 0.65rem;
+          }
+        }
+        .comments {
+          svg:hover {
             stroke: #34d399;
+            transition: 0.2s ease-in-out;
+            background-color: rgb(52, 211, 153, 0.1);
+          }
+          svg:hover + span {
+            transition: 0.2s ease-in-out;
+            color: #34d399;
+          }
+        }
+        .likes {
+          svg:hover {
+            stroke: crimson;
+            transition: 0.2s ease-in-out;
+            background-color: rgba(220, 20, 60, 0.1);
+          }
+          svg:hover + span {
+            transition: 0.2s ease-in-out;
+            color: crimson;
+          }
+        }
+        .shares {
+          svg:hover {
+            stroke: #34d399;
+            transition: 0.2s ease-in-out;
+            background-color: rgb(52, 211, 153, 0.1);
+          }
+          svg:hover + span {
+            transition: 0.2s ease-in-out;
+            color: #34d399;
+          }
+        }
+      }
+      .thread-comments {
+        // padding: 1rem;
+        margin: 0.5rem 0 0 0.5rem;
+        .comment:not(:first-of-type) {
+          margin-top: 1rem;
+        }
+        .comment {
+          padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+          border-left: 1px solid #222;
+          display: flex;
+          &:hover {
+            background-color: rgb(16, 16, 16);
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+          }
+          .left {
+            img {
+              border-radius: 4px;
+              width: 23.5px;
+              height: 23.5px;
+            }
+          }
+          .right {
+            margin-left: 0.5rem;
+            .username {
+              color: #34d399;
+              &:hover {
+                text-decoration: underline;
+              }
+            }
+            small {
+              margin-left: 0.5rem;
+              color: #bbb;
+            }
           }
         }
       }

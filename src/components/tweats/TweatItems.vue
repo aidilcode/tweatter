@@ -30,6 +30,7 @@
     <div class="content-repr">
       <div class="comments">
         <FeatherComments />
+        <span v-if="comments_count">{{comments_count}}</span>
       </div>
       <div class="likes">
         <FeatherHeart
@@ -73,6 +74,10 @@ export default {
       required: true,
     },
     likes_count: {
+      type: Number,
+      required: true,
+    },
+    comments_count: {
       type: Number,
       required: true,
     },
