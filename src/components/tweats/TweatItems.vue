@@ -194,7 +194,7 @@ export default {
       .then(() => {
         wrp.classList.remove("sending-reply")
         btn.classList.remove("submit-reply")
-        // this.cancel()
+        this.cancel()
       })
       .catch((err) => console.error(err));
     },
