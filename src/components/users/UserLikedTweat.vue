@@ -27,60 +27,77 @@
     </div>
   </div>
   <LoadingSpinner v-if="!state.reciveData" class="spin-loader" />
-  <div class="tweat" v-for="tweat in state.userTweats" :key="tweat.id">
+  <div class="tweat" v-for="tweat in state.userLikes" :key="tweat.id">
     <router-link
       :to="{
         name: 'TweatDetail',
-        params: { username: tweat.author.username, id: tweat.id },
+        params: { username: tweat.tweat.author.username, id: tweat.tweat.id },
       }"
       class="content"
     >
       <div class="author-wrapper">
         <div class="info">
           <div class="img">
-            <img :src="tweat.author.avatar_url" alt="" width="30" height="30" />
+            <img
+              :src="tweat.tweat.author.avatar_url"
+              alt=""
+              width="30"
+              height="30"
+            />
           </div>
-          <span class="author font-medium">{{ tweat.author.username }}</span>
+          <span class="author font-medium">{{
+            tweat.tweat.author.username
+          }}</span>
         </div>
-        <object
-          v-if="state.current == tweat.author.username"
-          class="dropdown"
-          @click="moreOption($event, tweat.id)"
-          :id="tweat.id"
-          style="float: right"
-        >
-          <button class="dropbtn">
-            <FeatherMoreHorizontal />
-          </button>
-          <div class="dropdown-content" :id="'ddb-' + tweat.id">
-            <div @click="deleteTweat(tweat.id)">delete</div>
-            <div>archive</div>
+        <object data="" type="">
+          <div
+            v-if="state.current == tweat.tweat.author.username"
+            class="dropdown"
+            @click="moreOption($event, tweat.tweat.id)"
+            :id="tweat.tweat.id"
+            style="float: right"
+          >
+            <button class="dropbtn">
+              <FeatherMoreHorizontal />
+            </button>
+            <div class="dropdown-content" :id="'ddb-' + tweat.tweat.id">
+              <div @click="deleteTweat(tweat.tweat.id)">delete</div>
+              <div>archive</div>
+            </div>
           </div>
         </object>
       </div>
       <div class="content-body">
-        {{ tweat.tweat }}
+        {{ tweat.tweat.tweat }}
       </div>
-      <div v-if="tweat.picture_url" class="content-image">
-        <img :src="tweat.picture_url" alt="" srcset="" />
+      <div v-if="tweat.tweat.picture_url" class="content-image">
+        <img :src="tweat.tweat.picture_url" alt="" srcset="" />
       </div>
     </router-link>
     <div class="content-repr">
       <div class="comments">
         <FeatherComments
-          @click="commentTweat(tweat.author.username, tweat.tweat, tweat.id)"
+          @click="
+            commentTweat(
+              tweat.tweat.author.username,
+              tweat.tweat.tweat,
+              tweat.tweat.id
+            )
+          "
         />
-        <span :id="'comment-' + tweat.id">{{
-          format(tweat.comments_count)
+        <span :id="'comment-' + tweat.tweat.id">{{
+          format(tweat.tweat.comments_count)
         }}</span>
       </div>
       <div class="likes">
         <FeatherHeart
-          :id="'isliked-' + tweat.id"
-          :class="{ liked: tweat.likes.includes(state.current) }"
-          @click="likeTweat(tweat.id)"
+          :id="'isliked-' + tweat.tweat.id"
+          :class="{ liked: tweat.tweat.likes.includes(state.current) }"
+          @click="dislikeTweat(tweat.tweat.id)"
         />
-        <span :id="'like-' + tweat.id">{{ format(tweat.likes_count) }}</span>
+        <span :id="'like-' + tweat.tweat.id">{{
+          format(tweat.tweat.likes_count)
+        }}</span>
       </div>
       <div class="shares">
         <FeatherShare />
@@ -126,7 +143,7 @@ export default {
     const requestUser = route.params.username;
 
     const state = reactive({
-      userTweats: [],
+      userLikes: [],
       reciveData: false,
       next: "",
       endOf: {
@@ -137,13 +154,13 @@ export default {
       breakLoad: 0,
     });
 
-    async function fetchUserTweats(username = null) {
+    async function fetchUserLikedTweats(username = null) {
       let access = localStorage.getItem("access_token");
       let unames = username ? username : requestUser;
 
       const res = await axiosInstance({
         method: "GET",
-        url: `${unames}/tweats`,
+        url: `${unames}/likes`,
         headers: {
           Authorization: `Bearer ${access}`,
           "Content-Type": "application/json;charset=UTF-8",
@@ -153,22 +170,21 @@ export default {
       });
 
       if (typeof res === "object") {
-        state.userTweats = res.data.results;
+        state.userLikes = res.data.results;
         state.next = res.data.next;
         state.reciveData = true;
         return;
       }
-
       alert("Something is wrong, try to reload the page.");
     }
 
     return {
       state,
-      fetchUserTweats,
+      fetchUserLikedTweats,
     };
   },
   async created() {
-    await this.fetchUserTweats();
+    await this.fetchUserLikedTweats();
   },
   methods: {
     nround(n, precision) {
@@ -245,40 +261,20 @@ export default {
         })
         .catch((err) => console.error(err));
     },
-    async likeTweat(id) {
+    async dislikeTweat(id) {
       let access = localStorage.getItem("access_token");
-      var elm = document.getElementById(`like-${id}`);
-      var ilm = document.getElementById(`isliked-${id}`);
-      var url = `tweat/like/${id}`; // default like url
-      var numdis;
-      var numlik;
-
-      if (ilm.classList.contains("liked")) {
-        url = `tweat/dislike/${id}`;
-        ilm.classList.remove("liked");
-
-        numdis = Number(elm.innerText) - 1;
-        if (numdis == 0) numdis = "";
-        elm.innerText = numdis;
-      } else {
-        ilm.classList.add("liked");
-
-        if (numlik == "") {
-          numlik = 1;
-        } else {
-          numlik = Number(elm.innerText) + 1;
-        }
-        elm.innerText = numlik;
-      }
+      var url = `tweat/dislike/${id}`; // default dislike url
 
       await axiosInstance({
-        method: "GET",
+        method: "DELETE",
         url: url,
         headers: {
           Authorization: `Bearer ${access}`,
           "Content-Type": "application/json;charset=UTF-8",
         },
       }).catch((err) => console.error(err));
+
+      await this.fetchUserLikedTweats();
     },
     loadMore: function () {
       if (this.state.next === null) {
@@ -317,7 +313,7 @@ export default {
         }
       });
 
-      await this.fetchUserTweats();
+      await this.fetchUserLikedTweats();
     },
   },
   mounted() {
@@ -334,7 +330,7 @@ export default {
   },
   watch: {
     $route(to) {
-      this.fetchUserTweats(to.params.username);
+      this.fetchUserLikedTweats(to.params.username);
     },
   },
 };
@@ -397,6 +393,7 @@ export default {
       }
     }
     .dropdown {
+      z-index: 99 !important;
       position: relative;
       display: inline-block;
     }

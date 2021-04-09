@@ -10,6 +10,7 @@ import Tweats from '@/components/tweats/Tweats'
 import TweatDetail from '@/components/tweats/TweatDetail'
 import UserTweats from '@/components/users/UserTweats'
 import UserMedias from '@/components/users/UserMedias'
+import UserLikedTweat from '@/components/users/UserLikedTweat'
 
 
 const routes = [
@@ -58,6 +59,12 @@ const routes = [
         path: 'media',
         name: 'UserMedias',
         component: UserMedias,
+        meta: {requiredLogin: true},
+      },
+      {
+        path: 'likes',
+        name: 'UserLikedTweat',
+        component: UserLikedTweat,
         meta: {requiredLogin: true},
       }
     ]

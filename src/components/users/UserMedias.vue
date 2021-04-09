@@ -1,4 +1,31 @@
 <template>
+  <div class="comment-tweat" v-if="userIsComment && repliedTo">
+    <div class="inner">
+      <div
+        class="wrap"
+        id="comment-wrapper"
+        :class="{ '--exceeded': commentContentLength > 255 }"
+      >
+        <small
+          >replying to <span>@{{ repliedTo }}</span> tweat</small
+        >
+        <p v-if="whatTweat">{{ whatTweat }}</p>
+        <contenteditable
+          id="content-comment"
+          data-ph="Tweat your reply ..."
+          tag="div"
+          :contenteditable="true"
+          v-model="commentContent"
+          :noNL="false"
+          :noHTML="true"
+        />
+        <div class="btn-wrapper">
+          <div class="cancel" @click="cancel">close</div>
+          <div class="reply" id="reply-btn" @click="reply">Reply</div>
+        </div>
+      </div>
+    </div>
+  </div>
   <LoadingSpinner v-if="!state.reciveData" class="spin-loader" />
   <div class="tweat" v-for="tweat in state.userMedias" :key="tweat.id">
     <router-link
@@ -42,7 +69,12 @@
     </router-link>
     <div class="content-repr">
       <div class="comments">
-        <FeatherComments />
+        <FeatherComments
+          @click="commentTweat(tweat.author.username, tweat.tweat, tweat.id)"
+        />
+        <span :id="'comment-' + tweat.id">{{
+          format(tweat.comments_count)
+        }}</span>
       </div>
       <div class="likes">
         <FeatherHeart
@@ -81,6 +113,15 @@ export default {
     FeatherHeart,
     FeatherShare,
     LoadingSpinner,
+  },
+  data() {
+    return {
+      userIsComment: false,
+      repliedTo: "",
+      commentContent: "",
+      whatTweat: "",
+      tweatId: 0,
+    };
   },
   setup() {
     const route = useRoute();
@@ -155,6 +196,55 @@ export default {
 
       const DDbuttons = document.getElementById(`ddb-${id}`);
       DDbuttons.classList.toggle("block");
+    },
+    commentTweat(author, tweat, id) {
+      this.userIsComment = true;
+      this.repliedTo = author;
+      this.whatTweat = tweat;
+      this.tweatId = id;
+    },
+    cancel() {
+      this.userIsComment = false;
+      this.repliedTo = "";
+      this.whatTweat = "";
+      this.tweatId = 0;
+    },
+    async reply() {
+      var numCom;
+      var wrp = document.getElementById("comment-wrapper");
+      var btn = document.getElementById("reply-btn");
+      var elm = document.getElementById(`comment-${this.tweatId}`);
+      const comment = document.getElementById("content-comment").innerText;
+
+      wrp.classList.add("sending-reply");
+      btn.classList.add("submit-reply");
+
+      let access = localStorage.getItem("access_token");
+      let formData = new FormData();
+      formData.append("content", comment);
+
+      if (numCom == "") {
+        numCom = 1;
+      } else {
+        numCom = Number(elm.innerText) + 1;
+      }
+      elm.innerText = numCom;
+
+      await axiosInstance({
+        method: "POST",
+        url: `tweat/comment/${this.tweatId}`,
+        data: formData,
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      })
+        .then(() => {
+          wrp.classList.remove("sending-reply");
+          btn.classList.remove("submit-reply");
+          this.cancel();
+        })
+        .catch((err) => console.error(err));
     },
     async likeTweat(id) {
       let access = localStorage.getItem("access_token");
@@ -419,6 +509,108 @@ export default {
       svg:hover + span {
         transition: 0.2s ease-in-out;
         color: #34d399;
+      }
+    }
+  }
+}
+
+.comment-tweat {
+  z-index: 999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  background-color: rgba(17, 17, 17, 0.6);
+  .inner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    .sending-reply {
+      border-color: #34d399 !important;
+    }
+    .submit-reply {
+      background-color: rgb(52, 211, 153, 0.1) !important;
+    }
+    .wrap {
+      border-radius: 4px;
+      width: 36rem;
+      padding: 1.5rem 2rem 1rem 2rem;
+      background-color: #111;
+      border: 1px solid #222;
+      color: #ccc;
+      display: flex;
+      flex-direction: column !important;
+      p {
+        word-break: break-all;
+        margin: 0.5rem;
+        padding: 0.25rem 0.25rem 0.35rem 0.75rem;
+        border-left: 1px solid #222;
+      }
+      small {
+        span {
+          color: #34d399;
+        }
+      }
+      #content-comment {
+        margin-top: 0.5rem;
+        word-break: break-all;
+      }
+      [contentEditable="true"]:empty:not(:focus):before {
+        content: attr(data-ph);
+        color: grey;
+      }
+      [contenteditable="true"] {
+        font-size: 1.1em;
+        padding: 0.5rem 0 1rem 0;
+        &:focus {
+          color: rgb(192, 192, 192) !important;
+          outline: 0px solid transparent !important;
+        }
+      }
+      .btn-wrapper {
+        display: flex;
+        justify-content: flex-end;
+        div {
+          cursor: pointer;
+        }
+        div:not(:first-of-type) {
+          margin-left: 0.5rem;
+        }
+        .cancel {
+          padding: 0.5rem 2rem 0.5rem 2rem;
+        }
+        .reply {
+          border-radius: 4px;
+          border: 1px solid #34d399;
+          padding: 0.5rem 2rem 0.5rem 2rem;
+          transition: 0.2s ease-in-out;
+          &:hover {
+            transition: 0.2s ease-in-out;
+            background-color: rgb(52, 211, 153, 0.1);
+          }
+        }
+      }
+      &.--exceeded {
+        border-color: rgb(141, 12, 38) !important;
+        [contenteditable="true"] {
+          color: rgb(141, 12, 38) !important;
+          &:focus {
+            color: rgb(141, 12, 38) !important;
+            outline: none !important;
+            border-color: rgb(141, 12, 38) !important;
+          }
+        }
+        .reply {
+          border: 1px solid rgb(141, 12, 38) !important;
+          color: rgb(141, 12, 38) !important;
+          &:hover {
+            background-color: #111 !important;
+          }
+        }
       }
     }
   }
