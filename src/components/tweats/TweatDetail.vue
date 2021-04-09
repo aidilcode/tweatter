@@ -429,12 +429,12 @@ export default {
       }
       .thread-comments {
         // padding: 1rem;
-        margin: 0.5rem 0 0 0.5rem;
-        .comment:not(:first-of-type) {
-          margin-top: 1rem;
-        }
+        margin: 0.5rem 0 0 0.75rem;
+        // .comment:not(:first-of-type) {
+        //   margin-top: 1rem;
+        // }
         .comment {
-          padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+          padding: 0.75rem 0.5rem 0.5rem 0.75rem;
           border-left: 1px solid #222;
           display: flex;
           &:hover {

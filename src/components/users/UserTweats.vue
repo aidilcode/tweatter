@@ -15,10 +15,10 @@
           </div>
           <span class="author font-medium">{{ tweat.author.username }}</span>
         </div>
-        <div
+        <object
           v-if="state.current == tweat.author.username"
           class="dropdown"
-          @click="moreOption(tweat.id)"
+          @click="moreOption($event, tweat.id)"
           :id="tweat.id"
           style="float: right"
         >
@@ -29,7 +29,7 @@
             <div @click="deleteTweat(tweat.id)">delete</div>
             <div>archive</div>
           </div>
-        </div>
+        </object>
       </div>
       <div class="content-body">
         {{ tweat.tweat }}
@@ -144,7 +144,14 @@ export default {
         ? this.nround(n / Math.pow(1000, base), 2) + suffix
         : "" + n;
     },
-    moreOption(id) {
+    moreOption(event, id) {
+      event.cancelBubble = true;
+      if (event.stopPropagation) {
+        console.log("cancelled");
+        event.stopPropagation();
+        event.preventDefault();
+      }
+
       const DDbuttons = document.getElementById(`ddb-${id}`);
       DDbuttons.classList.toggle("block");
     },

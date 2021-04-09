@@ -160,7 +160,7 @@ export default {
 }
 .forms {
   width: 100%;
-  padding: 1rem 0 1rem 0;
+  padding: 1rem 0 0 0;
   .process-tweat {
     transition: 0.3s ease-in-out;
     border-color: #34d399 !important;
