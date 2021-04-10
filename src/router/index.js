@@ -11,6 +11,7 @@ import TweatDetail from '@/components/tweats/TweatDetail'
 import UserTweats from '@/components/users/UserTweats'
 import UserMedias from '@/components/users/UserMedias'
 import UserLikedTweat from '@/components/users/UserLikedTweat'
+import UserReplies from '@/components/users/UserReplies'
 
 
 const routes = [
@@ -62,11 +63,17 @@ const routes = [
         meta: {requiredLogin: true},
       },
       {
+        path: 'replies',
+        name: 'UserReplies',
+        component: UserReplies,
+        meta: {requiredLogin: true},
+      },
+      {
         path: 'likes',
         name: 'UserLikedTweat',
         component: UserLikedTweat,
         meta: {requiredLogin: true},
-      }
+      },
     ]
   },
   { // settings

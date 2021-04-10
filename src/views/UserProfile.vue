@@ -48,7 +48,7 @@
           <div>
             <router-link
               :class="{ active: thisTab == 'replies' }"
-              :to="state.links.tweat"
+              :to="state.links.replies"
               >replies
             </router-link>
           </div>
@@ -143,6 +143,7 @@ export default {
         tweat: "",
         media: "",
         likes: "",
+        replies: "",
       },
       currRoute: route.params,
       requestError: {
@@ -174,6 +175,7 @@ export default {
         state.links.tweat = `/${unames}`;
         state.links.media = `/${unames}/media`;
         state.links.likes = `/${unames}/likes`;
+        state.links.replies = `/${unames}/replies`;
       } else {
         state.requestError.error = true;
       }

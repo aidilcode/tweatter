@@ -1,9 +1,15 @@
 <template>
   <div class="comment-tweat" v-if="userIsComment && repliedTo">
     <div class="inner">
-      <div class="wrap" id="comment-wrapper" :class="{ '--exceeded': commentContentLength > 255 }">
-        <small>replying to <span>@{{repliedTo}}</span> tweat</small>
-        <p v-if="whatTweat">{{whatTweat}}</p>
+      <div
+        class="wrap"
+        id="comment-wrapper"
+        :class="{ '--exceeded': commentContentLength > 255 }"
+      >
+        <small
+          >replying to <span>@{{ repliedTo }}</span> tweat</small
+        >
+        <p v-if="whatTweat">{{ whatTweat }}</p>
         <contenteditable
           id="content-comment"
           data-ph="Tweat your reply ..."
@@ -20,58 +26,112 @@
       </div>
     </div>
   </div>
-  <div class="tweat mt-2">
+  <LoadingSpinner v-if="!state.reciveData" class="spin-loader" />
+  <div class="tweat" v-for="tweat in state.userReplies" :key="tweat.id">
     <router-link
       :to="{
         name: 'TweatDetail',
-        params: { username: author, id: id },
+        params: { username: tweat.tweat.author.username, id: tweat.tweat.id },
       }"
+      class="content"
     >
       <div class="author-wrapper">
         <div class="info">
           <div class="img">
-            <img :src="authorAvatar" alt="" width="30" height="30" />
+            <img
+              :src="tweat.tweat.author.avatar_url"
+              alt=""
+              width="30"
+              height="30"
+            />
           </div>
-          <router-link
-            :to="{ name: 'UserProfile', params: { username: author } }"
-            class="author font-medium"
-            >{{ author }}</router-link
+          <span class="author font-medium">{{
+            tweat.tweat.author.username
+          }}</span>
+        </div>
+        <object data="" type="">
+          <div
+            v-if="state.current == tweat.tweat.author.username"
+            class="dropdown"
+            @click="moreOption($event, tweat.tweat.id)"
+            :id="tweat.tweat.id"
+            style="float: right"
           >
-        </div>
+            <button class="dropbtn">
+              <FeatherMoreHorizontal />
+            </button>
+            <div class="dropdown-content" :id="'ddb-' + tweat.tweat.id">
+              <div @click="deleteTweat(tweat.tweat.id)">delete</div>
+              <div>archive</div>
+            </div>
+          </div>
+        </object>
       </div>
-      <div class="content">
-        <div class="content-body">
-          {{ tweat }}
-        </div>
-        <div v-if="pictureUrl" class="content-image">
-          <img :src="pictureUrl" alt="" srcset="" />
-        </div>
+      <div class="content-body">
+        {{ tweat.tweat.tweat }}
+      </div>
+      <div v-if="tweat.tweat.picture_url" class="content-image">
+        <img :src="tweat.tweat.picture_url" alt="" srcset="" />
       </div>
     </router-link>
     <div class="content-repr">
       <div class="comments">
-        <FeatherComments @click="commentTweat(author, tweat, id)" />
-        <span :id="'comment-' + id">{{ format(comments_count) }}</span>
+        <FeatherComments
+          @click="
+            commentTweat(
+              tweat.tweat.author.username,
+              tweat.tweat.tweat,
+              tweat.tweat.id
+            )
+          "
+        />
+        <span :id="'comment-' + tweat.tweat.id">{{
+          format(tweat.tweat.comments_count)
+        }}</span>
       </div>
       <div class="likes">
         <FeatherHeart
-          :id="'isliked-' + id"
-          :class="{ liked: likes.includes(username) }"
-          @click="likeTweat(id)"
+          :id="'isliked-' + tweat.tweat.id"
+          :class="{ liked: tweat.tweat.likes.includes(state.current) }"
+          @click="dislikeTweat(tweat.tweat.id)"
         />
-        <span :id="'like-' + id">{{ format(likes_count) }}</span>
+        <span :id="'like-' + tweat.tweat.id">{{
+          format(tweat.tweat.likes_count)
+        }}</span>
       </div>
       <div class="shares">
         <FeatherShare />
       </div>
     </div>
+    <div class="thread-comments">
+      <div class="comment">
+        <div class="left">
+          <a href="">
+            <img :src="tweat.users.avatar_url" />
+          </a>
+        </div>
+        <div class="right">
+          <p>
+            <a href="" class="username">{{ tweat.users.username }}</a>
+            <small>replying to @{{ tweat.tweat.author.username }}</small>
+          </p>
+          <p class="content">{{ tweat.content }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div v-if="state.endOf.state" class="end-of">
+    {{ state.endOf.msg }}
   </div>
 </template>
 
 <script>
+import { reactive } from "vue";
+import { useRoute } from "vue-router";
 import axiosInstance from "@/plugin/axios";
 
-// import FeatherMoreHorizontal from "@/components/icons/FeatherMoreHorizontal";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import FeatherMoreHorizontal from "@/components/icons/FeatherMoreHorizontal";
 import FeatherComments from "@/components/icons/FeatherComments";
 import FeatherHeart from "@/components/icons/FeatherHeart";
 import FeatherShare from "@/components/icons/FeatherShare";
@@ -79,56 +139,68 @@ import FeatherShare from "@/components/icons/FeatherShare";
 export default {
   name: "TweatItems",
   components: {
-    // FeatherMoreHorizontal,
+    FeatherMoreHorizontal,
     FeatherComments,
     FeatherHeart,
     FeatherShare,
-  },
-  props: {
-    id: String,
-    author: {
-      type: String,
-      required: true,
-    },
-    tweat: {
-      type: String,
-      required: true,
-    },
-    likes_count: {
-      type: Number,
-      required: true,
-    },
-    comments_count: {
-      type: Number,
-      required: true,
-    },
-    likes: {
-      type: Object,
-      required: true,
-    },
-    authorAvatar: {
-      type: String,
-      required: true,
-    },
-    pictureUrl: {
-      type: [Object, String],
-      required: true,
-    },
-    createdAt: {
-      type: String,
-      required: true,
-    },
-    inUserView: Boolean,
+    LoadingSpinner,
   },
   data() {
     return {
-      username: localStorage.getItem("username"),
       userIsComment: false,
       repliedTo: "",
       commentContent: "",
       whatTweat: "",
       tweatId: 0,
     };
+  },
+  setup() {
+    const route = useRoute();
+    const requestUser = route.params.username;
+
+    const state = reactive({
+      userReplies: [],
+      reciveData: false,
+      next: "",
+      endOf: {
+        state: false,
+        msg: "",
+      },
+      current: localStorage.getItem("username"),
+      breakLoad: 0,
+    });
+
+    async function fetchUserLikedTweats(username = null) {
+      let access = localStorage.getItem("access_token");
+      let unames = username ? username : requestUser;
+
+      const res = await axiosInstance({
+        method: "GET",
+        url: `${unames}/replies`,
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      }).catch((err) => {
+        console.error(err);
+      });
+
+      if (typeof res === "object") {
+        state.userReplies = res.data.results;
+        state.next = res.data.next;
+        state.reciveData = true;
+        return;
+      }
+      alert("Something is wrong, try to reload the page.");
+    }
+
+    return {
+      state,
+      fetchUserLikedTweats,
+    };
+  },
+  async created() {
+    await this.fetchUserLikedTweats();
   },
   methods: {
     nround(n, precision) {
@@ -145,7 +217,14 @@ export default {
         ? this.nround(n / Math.pow(1000, base), 2) + suffix
         : "" + n;
     },
-    moreOption(id) {
+    moreOption(event, id) {
+      event.cancelBubble = true;
+      if (event.stopPropagation) {
+        console.log("cancelled");
+        event.stopPropagation();
+        event.preventDefault();
+      }
+
       const DDbuttons = document.getElementById(`ddb-${id}`);
       DDbuttons.classList.toggle("block");
     },
@@ -168,8 +247,8 @@ export default {
       var elm = document.getElementById(`comment-${this.tweatId}`);
       const comment = document.getElementById("content-comment").innerText;
 
-      wrp.classList.add("sending-reply")
-      btn.classList.add("submit-reply")
+      wrp.classList.add("sending-reply");
+      btn.classList.add("submit-reply");
 
       let access = localStorage.getItem("access_token");
       let formData = new FormData();
@@ -191,60 +270,94 @@ export default {
           "Content-Type": "application/json;charset=UTF-8",
         },
       })
-      .then(() => {
-        wrp.classList.remove("sending-reply")
-        btn.classList.remove("submit-reply")
-        this.cancel()
-      })
-      .catch((err) => console.error(err));
+        .then(() => {
+          wrp.classList.remove("sending-reply");
+          btn.classList.remove("submit-reply");
+          this.cancel();
+        })
+        .catch((err) => console.error(err));
     },
-    async likeTweat(id) {
+    async dislikeTweat(id) {
       let access = localStorage.getItem("access_token");
-      var elm = document.getElementById(`like-${id}`);
-      var ilm = document.getElementById(`isliked-${id}`);
-      var url = `tweat/like/${id}`; // default like url
-      var method = "GET";
-      var numdis;
-      var numlik;
-
-      if (ilm.classList.contains("liked")) {
-        url = `tweat/dislike/${id}`;
-        method = "DELETE";
-        ilm.classList.remove("liked");
-
-        numdis = Number(elm.innerText) - 1;
-        if (numdis == 0) numdis = "";
-        elm.innerText = numdis;
-      } else {
-        ilm.classList.add("liked");
-
-        if (numlik == "") {
-          numlik = 1;
-        } else {
-          numlik = Number(elm.innerText) + 1;
-        }
-        elm.innerText = numlik;
-      }
+      var url = `tweat/dislike/${id}`; // default dislike url
 
       await axiosInstance({
-        method: method,
+        method: "DELETE",
         url: url,
         headers: {
           Authorization: `Bearer ${access}`,
           "Content-Type": "application/json;charset=UTF-8",
         },
       }).catch((err) => console.error(err));
+
+      await this.fetchUserLikedTweats();
+    },
+    loadMore: function () {
+      if (this.state.next === null) {
+        this.state.endOf.state = true;
+        this.state.endOf.msg = "No more content to show";
+        return;
+      }
+
+      if (this.state.breakLoad <= Date.now()) {
+        axiosInstance({
+          method: "GET",
+          url: this.state.next,
+        }).then((res) => {
+          this.state.breakLoad = Date.now() + 1000; // 1seconds
+          this.state.userTweats.push(...res.data.results);
+          this.state.next = res.data.next;
+        });
+      }
+    },
+    async deleteTweat(id) {
+      let access = localStorage.getItem("access_token");
+
+      await axiosInstance({
+        method: "DELETE",
+        url: `tweat/${id}`,
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      }).catch((err) => {
+        if (err.response.status == 401) {
+          alert("You are not unauthorized to use this action.");
+        }
+        if (err.response.status == 400) {
+          console.error(err);
+        }
+      });
+
+      await this.fetchUserLikedTweats();
     },
   },
-  computed: {
-    commentContentLength() {
-      return this.commentContent.length
+  mounted() {
+    let vm = this;
+    window.addEventListener("scroll", function () {
+      let scTop = this.document.documentElement.scrollTop;
+      let scHeight = this.document.documentElement.scrollHeight;
+      let scClient = this.document.documentElement.clientHeight;
+
+      if (scTop + scClient == scHeight && !vm.state.endOf.msg) {
+        vm.loadMore();
+      }
+    });
+  },
+  watch: {
+    $route(to) {
+      this.fetchUserLikedTweats(to.params.username);
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
+.spin-loader {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
 .tweat {
   cursor: pointer;
   padding: 0.5rem 1.25rem 1rem 1.25rem;
@@ -252,9 +365,10 @@ export default {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   border-radius: 4px;
   word-break: break-all;
-  margin-top: 1.5rem;
+  &:not(:first-of-type) {
+    margin-top: 1.5rem;
+  }
   &:hover {
-    transition: 0.2s ease-in-out;
     background-color: rgb(19, 19, 19);
   }
 }
@@ -290,14 +404,12 @@ export default {
       border-radius: 20px;
       border: none;
       cursor: pointer;
-      transition: 0.2s ease-in-out;
       &:hover {
-        transition: 0.2s ease-in-out;
         background-color: rgb(52, 211, 153, 0.1);
       }
     }
     .dropdown {
-      z-index: 999 !important;
+      z-index: 99 !important;
       position: relative;
       display: inline-block;
     }
@@ -320,9 +432,7 @@ export default {
         padding: 12px 20px;
         text-decoration: none;
         display: block;
-        transition: 0.2s ease-in-out;
         &:hover {
-          transition: 0.2s ease-in-out;
           background-color: rgb(24, 24, 24);
         }
       }
@@ -351,48 +461,6 @@ export default {
     .content-body {
       font-size: 0.925em;
       margin-top: 1rem;
-    }
-    .content-repr-2 {
-      display: flex;
-      margin-top: 1rem;
-      svg {
-        transform: scale(0.9);
-        stroke: rgb(148, 148, 148);
-      }
-      div {
-        width: 6rem;
-        cursor: pointer;
-        display: inline-block;
-        span {
-          margin-left: 0.5rem;
-          font-size: 0.75em;
-        }
-        .inner {
-          display: flex;
-          align-items: center;
-        }
-      }
-      div:not(:last-child) {
-        margin-right: 6rem;
-      }
-      .comments:hover {
-        color: #34d399;
-        svg {
-          stroke: #34d399;
-        }
-      }
-      .like:hover {
-        color: crimson;
-        svg {
-          stroke: crimson;
-        }
-      }
-      .share:hover {
-        color: #34d399;
-        svg {
-          stroke: #34d399;
-        }
-      }
     }
   }
   .content-repr {
@@ -452,6 +520,43 @@ export default {
       svg:hover + span {
         transition: 0.2s ease-in-out;
         color: #34d399;
+      }
+    }
+  }
+  .thread-comments {
+    // padding: 1rem;
+    margin: 0.5rem 0 0 0.75rem;
+    // .comment:not(:first-of-type) {
+    //   margin-top: 1rem;
+    // }
+    .comment {
+      padding: 0.75rem 0.5rem 0.5rem 0.75rem;
+      border-left: 1px solid #222;
+      display: flex;
+      &:hover {
+        background-color: rgb(16, 16, 16);
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+      }
+      .left {
+        img {
+          border-radius: 4px;
+          width: 23.5px;
+          height: 23.5px;
+        }
+      }
+      .right {
+        margin-left: 0.5rem;
+        .username {
+          color: #34d399;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+        small {
+          margin-left: 0.5rem;
+          color: #bbb;
+        }
       }
     }
   }
@@ -557,5 +662,12 @@ export default {
       }
     }
   }
+}
+.end-of {
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
+  margin-bottom: 2rem;
 }
 </style>
