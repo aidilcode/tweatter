@@ -1,303 +1,438 @@
 <template>
-  <div class="comment-tweat" v-if="userIsComment && repliedTo">
-    <div class="inner">
-      <div class="wrap" id="comment-wrapper" :class="{ '--exceeded': commentContentLength > 255 }">
-        <small>replying to <span>@{{repliedTo}}</span> tweat</small>
-        <p v-if="whatTweat">{{whatTweat}}</p>
-        <contenteditable
-          id="content-comment"
-          data-ph="Tweat your reply ..."
-          tag="div"
-          :contenteditable="true"
-          v-model="commentContent"
-          :noNL="false"
-          :noHTML="true"
-        />
-        <div class="btn-wrapper">
-          <div class="cancel" @click="cancel">close</div>
-          <div class="reply" id="reply-btn" @click="reply">Reply</div>
+  <Comment
+    v-if="commenting"
+    :id="tweatId"
+    :author="repliedTo"
+    :tweat="tweatContent"
+    @closeComment="closedComment"
+  />
+  <div class="tweatters-wrapper">
+    <div class="tweat" v-for="tweat in state.tweats" :key="tweat.id">
+      <router-link
+        :to="{
+          name: 'TweatDetail',
+          params: { username: tweat.author.username, id: tweat.id },
+        }"
+        class="tweat-link"
+      >
+        <div class="tweat-info">
+          <router-link :to="tweat.author.username">
+            <img :src="tweat.author.avatar_url" alt="" width="30" height="30" />
+            <span class="tweat-username">{{ tweat.author.username }}</span>
+          </router-link>
+          <object
+            :id="tweat.id"
+            @click="moreOption($event, tweat.id)"
+            class="dropdown"
+            style="float: right"
+          >
+            <button class="dropbtn" :id="'dropbtn-' + tweat.id">
+              <FeatherMoreHorizontal />
+            </button>
+            <div class="dropdown-content" :id="'more-' + tweat.id">
+              <div>archive</div>
+              <div>report</div>
+              <div
+                class="delete-tweat"
+                v-if="requestUser == state.user.username"
+                @click="deleteTweat(tweat.id)"
+              >
+                delete
+              </div>
+            </div>
+          </object>
+        </div>
+        <div class="tweat-content">
+          <div>
+            {{ tweat.tweat }}
+          </div>
+          <div v-if="tweat.picture_url" class="image">
+            <img :src="tweat.picture_url" alt="" srcset="" />
+          </div>
+        </div>
+        <div class="tweat-repr">
+          <div class="tweat-comment">
+            <span
+              ><FeatherComments
+                @click="
+                  commentTweat(
+                    $event,
+                    tweat.author.username,
+                    tweat.tweat,
+                    tweat.id
+                  )
+                "
+            /></span>
+            <div :id="'comment-' + tweat.id">
+              {{ format(tweat.comments_count) }}
+            </div>
+          </div>
+          <div class="tweat-like">
+            <span
+              :id="'isliked-' + tweat.id"
+              :class="{ liked: tweat.likes.includes(state.user.username) }"
+              @click="likeTweat($event, tweat.id)"
+              ><FeatherHeart
+            /></span>
+            <div :id="'like-' + tweat.id">{{ format(tweat.likes_count) }}</div>
+          </div>
+          <div class="tweat-share">
+            <span><FeatherShare /></span>
+            <div>1.7k</div>
+          </div>
+          <div class="tweat-hash">
+            <span><FeatherHash /></span>
+            <div>400</div>
+          </div>
+        </div>
+      </router-link>
+      <div v-if="loadThreadComment && tweat.comments.length > 1">
+        <div class="user-replies">
+          <div
+            class="comment"
+            v-for="comment in tweat.comments"
+            :key="comment.id"
+          >
+            <div class="comment-info">
+              <router-link :to="comment.users__username">
+                <img :src="comment.users__avatar_url" />
+              </router-link>
+            </div>
+            <div class="comment-content">
+              <p>
+                <router-link :to="comment.users__username" class="username">{{
+                  comment.users__username
+                }}</router-link>
+                <small>replying to @{{ tweat.author.username }}</small>
+              </p>
+              <p class="content">{{ comment.content }}</p>
+            </div>
+          </div>
+        </div>
+        <div v-if="!detailTweat" class="continue-thread">
+          <router-link to="/">continue thread</router-link>
+        </div>
+      </div>
+      <div v-else class="border-bottom"></div>
+    </div>
+  </div>
+  <div v-if="state.loading" class="tweat-skeleton">
+    <div class="skeleton-wrap">
+      <div class="skeleton-info">
+        <div class="skeleton-img"></div>
+        <span></span>
+      </div>
+      <div class="skeleton-content">
+        <div class="skeleton-body">
+          <div class="bar-1"></div>
+          <div class="bar-2"></div>
         </div>
       </div>
     </div>
   </div>
-  <div class="tweat mt-2">
-    <router-link
-      :to="{
-        name: 'TweatDetail',
-        params: { username: author, id: id },
-      }"
-    >
-      <div class="author-wrapper">
-        <div class="info">
-          <div class="img">
-            <img :src="authorAvatar" alt="" width="30" height="30" />
-          </div>
-          <router-link
-            :to="{ name: 'UserProfile', params: { username: author } }"
-            class="author font-medium"
-            >{{ author }}</router-link
-          >
-        </div>
-      </div>
-      <div class="content">
-        <div class="content-body">
-          {{ tweat }}
-        </div>
-        <div v-if="pictureUrl" class="content-image">
-          <img :src="pictureUrl" alt="" srcset="" />
-        </div>
-      </div>
-    </router-link>
-    <div class="content-repr">
-      <div class="comments">
-        <FeatherComments @click="commentTweat(author, tweat, id)" />
-        <span :id="'comment-' + id">{{ format(comments_count) }}</span>
-      </div>
-      <div class="likes">
-        <FeatherHeart
-          :id="'isliked-' + id"
-          :class="{ liked: likes.includes(username) }"
-          @click="likeTweat(id)"
-        />
-        <span :id="'like-' + id">{{ format(likes_count) }}</span>
-      </div>
-      <div class="shares">
-        <FeatherShare />
-      </div>
-    </div>
+  <div v-if="!state.status.next && !detailTweat" class="bottom-end">
+    {{ state.status.mssg }} <span><a href="">&#128079;</a></span>
   </div>
 </template>
 
 <script>
+import { reactive } from "vue";
 import axiosInstance from "@/plugin/axios";
 
-// import FeatherMoreHorizontal from "@/components/icons/FeatherMoreHorizontal";
+import format from "@/plugin/format";
+import fetchMoreTweat from "@/plugin/fetchMoreTweat";
+
 import FeatherComments from "@/components/icons/FeatherComments";
 import FeatherHeart from "@/components/icons/FeatherHeart";
 import FeatherShare from "@/components/icons/FeatherShare";
+import FeatherHash from "@/components/icons/FeatherHash";
+import FeatherMoreHorizontal from "@/components/icons/FeatherMoreHorizontal";
+
+import Comment from "@/components/Comment";
 
 export default {
   name: "TweatItems",
   components: {
-    // FeatherMoreHorizontal,
     FeatherComments,
     FeatherHeart,
     FeatherShare,
+    FeatherHash,
+    FeatherMoreHorizontal,
+    Comment,
   },
   props: {
-    id: String,
-    author: {
+    tweatUrl: {
       type: String,
       required: true,
     },
-    tweat: {
+    requestUser: {
       type: String,
-      required: true,
+      required: false,
     },
-    likes_count: {
-      type: Number,
-      required: true,
+    loadThreadComment: {
+      type: Boolean,
+      requried: false,
     },
-    comments_count: {
-      type: Number,
-      required: true,
+    fetchAgain: {
+      type: Boolean,
+      required: false,
     },
-    likes: {
-      type: Object,
-      required: true,
-    },
-    authorAvatar: {
-      type: String,
-      required: true,
-    },
-    pictureUrl: {
-      type: [Object, String],
-      required: true,
-    },
-    createdAt: {
-      type: String,
-      required: true,
-    },
-    inUserView: Boolean,
+    detailTweat: {
+      type: Boolean,
+      required: false,
+    }
   },
   data() {
     return {
-      username: localStorage.getItem("username"),
-      userIsComment: false,
+      commenting: false,
       repliedTo: "",
-      commentContent: "",
-      whatTweat: "",
-      tweatId: 0,
+      tweatContent: "",
+      tweatId: "",
     };
   },
-  methods: {
-    nround(n, precision) {
-      var prec = Math.pow(10, precision);
-      return Math.round(n * prec) / prec;
-    },
-    format(n) {
-      if (n == "") return "";
-      var abbrev = "kmb";
-      var base = Math.floor(Math.log(Math.abs(n)) / Math.log(1000));
-      var suffix = abbrev[Math.min(2, base - 1)];
-      base = abbrev.indexOf(suffix) + 1;
-      return suffix
-        ? this.nround(n / Math.pow(1000, base), 2) + suffix
-        : "" + n;
-    },
-    moreOption(id) {
-      const DDbuttons = document.getElementById(`ddb-${id}`);
-      DDbuttons.classList.toggle("block");
-    },
-    commentTweat(author, tweat, id) {
-      this.userIsComment = true;
-      this.repliedTo = author;
-      this.whatTweat = tweat;
-      this.tweatId = id;
-    },
-    cancel() {
-      this.userIsComment = false;
-      this.repliedTo = "";
-      this.whatTweat = "";
-      this.tweatId = 0;
-    },
-    async reply() {
-      var numCom;
-      var wrp = document.getElementById("comment-wrapper");
-      var btn = document.getElementById("reply-btn");
-      var elm = document.getElementById(`comment-${this.tweatId}`);
-      const comment = document.getElementById("content-comment").innerText;
+  mixins: [format],
+  setup() {
+    // state
+    const state = reactive({
+      user: {
+        username: localStorage.getItem("username"),
+        avatar: localStorage.getItem("avatar_url"),
+      },
+      status: {
+        pause: Date.now() + 1000,
+        next: "next",
+        mssg: "Looks like you've reach the end of the page.",
+      },
+      fetchUrl: "",
+      access: localStorage.getItem("access_token"),
+      tweats: [],
+      loading: false,
+    });
 
-      wrp.classList.add("sending-reply")
-      btn.classList.add("submit-reply")
-
-      let access = localStorage.getItem("access_token");
-      let formData = new FormData();
-      formData.append("content", comment);
-
-      if (numCom == "") {
-        numCom = 1;
-      } else {
-        numCom = Number(elm.innerText) + 1;
-      }
-      elm.innerText = numCom;
+    // methods
+    async function fetchTweats() {
+      state.loading = true;
+      if (!state.fetchUrl) state.fetchUrl = this.tweatUrl;
 
       await axiosInstance({
-        method: "POST",
-        url: `tweat/comment/${this.tweatId}`,
-        data: formData,
+        method: "GET",
+        url: state.fetchUrl,
         headers: {
-          Authorization: `Bearer ${access}`,
+          Authorization: `Bearer ${state.access}`,
           "Content-Type": "application/json;charset=UTF-8",
         },
       })
-      .then(() => {
-        wrp.classList.remove("sending-reply")
-        btn.classList.remove("submit-reply")
-        this.cancel()
-      })
-      .catch((err) => console.error(err));
-    },
-    async likeTweat(id) {
-      let access = localStorage.getItem("access_token");
-      var elm = document.getElementById(`like-${id}`);
-      var ilm = document.getElementById(`isliked-${id}`);
-      var url = `tweat/like/${id}`; // default like url
-      var method = "GET";
-      var numdis;
-      var numlik;
+        .then((res) => {
+          state.status.next = res.data.next;
+          state.tweats = res.data.results;
+          state.loading = false;
+        })
+        .catch(() => {
+          state.loading = false;
+          state.status.next = null;
+          state.status.mssg = "Something is wrong, try to refresh your page.";
+        });
+    }
 
-      if (ilm.classList.contains("liked")) {
-        url = `tweat/dislike/${id}`;
-        method = "DELETE";
-        ilm.classList.remove("liked");
-
-        numdis = Number(elm.innerText) - 1;
-        if (numdis == 0) numdis = "";
-        elm.innerText = numdis;
-      } else {
-        ilm.classList.add("liked");
-
-        if (numlik == "") {
-          numlik = 1;
-        } else {
-          numlik = Number(elm.innerText) + 1;
-        }
-        elm.innerText = numlik;
+    async function likeTweat(event, id) {
+      event.cancelBubble = true;
+      if (event.stopPropagation) {
+        event.stopPropagation();
+        event.preventDefault();
       }
 
+      var counter = document.getElementById(`like-${id}`);
+      var likedTw = document.getElementById(`isliked-${id}`);
+      var likeUrl = "tweat/like/" + id;
+      var methods = "GET";
+      var numdisk, numlike;
+
+      // dislike
+      if (likedTw.classList.contains("liked")) {
+        likeUrl = "tweat/dislike/" + id;
+        methods = "DELETE";
+
+        numdisk = Number(counter.innerText) - 1;
+        if (numdisk == 0) numdisk = "";
+        counter.innerText = numdisk;
+      }
+
+      // like
+      if (!likedTw.classList.contains("liked")) {
+        if (numlike == "") numlike = 1;
+        else numlike = Number(likedTw.innerText) + 1;
+
+        counter.innerText = numlike;
+      }
+
+      likedTw.classList.toggle("liked");
       await axiosInstance({
-        method: method,
-        url: url,
+        method: methods,
+        url: likeUrl,
         headers: {
-          Authorization: `Bearer ${access}`,
+          Authorization: `Bearer ${state.access}`,
           "Content-Type": "application/json;charset=UTF-8",
         },
-      }).catch((err) => console.error(err));
+      }).catch(() => alert("Something went wrong when doing the action"));
+    }
+
+    async function deleteTweat(id) {
+      const response = await axiosInstance({
+        method: "DELETE",
+        url: "tweat/" + id,
+        headers: {
+          Authorization: `Bearer ${state.access}`,
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      });
+
+      if (response.status == 400)
+        alert("Something went wrong when doing the action.");
+      if (response.status == 401)
+        alert("You are not unauthorized to use this action.");
+      if (response.status == 204) {
+        console.log(state.fetchUrl);
+        await this.fetchTweats(state.fetchUrl);
+      }
+    }
+
+    async function loadMoreTweat() {
+      this.state.loading = true;
+      const response = await this.fetchMoreTweat(
+        this.state.status.next,
+        this.state.status.pause
+      );
+      this.state.loading = false;
+      if (!response || response.status == 400) return;
+
+      this.state.status.pause = Date.now() + 1000; // 1 seconds
+      this.state.tweats.push(...response.data.results);
+      this.state.status.next = response.data.next;
+    }
+
+    return {
+      state,
+      fetchTweats,
+      likeTweat,
+      loadMoreTweat,
+      deleteTweat,
+    };
+  },
+  watch: {
+    fetchAgain: function () {
+      this.fetchTweats();
     },
   },
-  computed: {
-    commentContentLength() {
-      return this.commentContent.length
+  methods: {
+    format,
+    fetchMoreTweat,
+    moreOption(event, id) {
+      event.cancelBubble = true;
+      if (event.stopPropagation) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+
+      const more = document.getElementById(`more-${id}`);
+      const drop = document.getElementById(`dropbtn-${id}`);
+      more.classList.toggle("block");
+      drop.classList.toggle("btn-active");
     },
+    commentTweat(event, repliedTo, tweatContent, tweatId) {
+      event.cancelBubble = true;
+      if (event.stopPropagation) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+
+      var commentCount = document.getElementById(`comment-${tweatId}`)
+        .innerText;
+
+      this.repliedTo = repliedTo;
+      this.tweatContent = tweatContent;
+      this.tweatId = tweatId;
+      this.commenting = true;
+      this.counts = commentCount;
+    },
+    closedComment(replied) {
+      if (replied) {
+        var counts = document.getElementById("comment-" + this.tweatId);
+        console.info(counts.innerText == "");
+        counts.innerText =
+          counts.innerText == "" ? 1 : Number(counts.innerText) + 1;
+      }
+
+      this.commenting = false;
+      this.repliedTo = "";
+      this.tweatContent = "";
+      this.tweatId = "";
+    },
+  },
+  async created() {
+    await this.fetchTweats();
+  },
+  mounted() {
+    let vm = this;
+    window.addEventListener("scroll", function () {
+      let top = this.document.documentElement.scrollTop;
+      let client = this.document.documentElement.clientHeight;
+      let height = this.document.documentElement.scrollHeight;
+
+      if (top + client == height) {
+        vm.loadMoreTweat();
+      }
+    });
   },
 };
 </script>
 
 <style lang="scss" scoped>
 .tweat {
+  margin-top: 1rem;
   cursor: pointer;
-  padding: 0.5rem 1.25rem 1rem 1.25rem;
-  border: 1px solid #222;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-  border-radius: 4px;
-  word-break: break-all;
-  margin-top: 1.5rem;
-  &:hover {
-    transition: 0.2s ease-in-out;
-    background-color: rgb(19, 19, 19);
-  }
-}
-.tweat {
-  font-family: "Roboto", sans-serif;
-  .author-wrapper {
+  border-top: 1px solid #222;
+  transition: 0.2s ease-in-out;
+  background: rgb(18, 18, 18);
+  .tweat-link {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 0.5rem;
-    color: #ccc;
-    .info {
-      display: flex;
-      align-items: center;
-      img {
-        width: 30px;
-        height: 30px;
-        border-radius: 4px;
-      }
-      .author {
-        margin-left: 0.75rem;
-        &:hover {
-          text-decoration: underline;
-        }
-      }
+    flex-direction: column;
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+  }
+  .tweat-info {
+    .tweat-username:hover {
+      text-decoration: underline;
     }
-    svg {
-      stroke: #34d399;
-      cursor: pointer;
+    a {
+      display: inline-flex;
+      align-items: center;
+    }
+    img {
+      border-radius: 4px;
+    }
+    span {
+      margin-left: 0.5rem;
+      font-size: 1.1em;
+      font-weight: 600;
+    }
+    .btn-active {
+      svg {
+        stroke: #34d399 !important;
+      }
+      background-color: rgb(52, 211, 153, 0.1) !important;
     }
     .dropbtn {
       padding: 0.25rem;
       border-radius: 20px;
       border: none;
       cursor: pointer;
-      transition: 0.2s ease-in-out;
       &:hover {
-        transition: 0.2s ease-in-out;
+        svg {
+          stroke: #34d399;
+        }
         background-color: rgb(52, 211, 153, 0.1);
       }
     }
     .dropdown {
-      z-index: 999 !important;
       position: relative;
       display: inline-block;
     }
@@ -315,247 +450,215 @@ export default {
       min-width: 160px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
       z-index: 99;
+      .delete-tweat:hover {
+        color: crimson !important;
+        background-color: rgba(220, 20, 60, 0.1);
+      }
       div {
         color: #ccc;
         padding: 12px 20px;
         text-decoration: none;
         display: block;
-        transition: 0.2s ease-in-out;
         &:hover {
-          transition: 0.2s ease-in-out;
           background-color: rgb(24, 24, 24);
         }
       }
     }
   }
-  .content {
-    color: #ccc;
-    .content-image {
-      // min-width : 504px;
-      // min-height: 433px;
-      max-width: 552px;
-      max-height: 493px;
+  .tweat-content {
+    div {
+      margin-top: 0.75rem;
+      font-size: 0.955em;
+    }
+    .image {
+      max-height: 500px !important;
       overflow: hidden;
-      position: relative;
-
-      margin: 1rem 0 0.25rem 0;
-      background-color: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       border-radius: 4px;
-      img {
-        border-radius: 4px;
-      }
     }
-    .content-body {
-      font-size: 0.925em;
-      margin-top: 1rem;
-    }
-    .content-repr-2 {
+  }
+  .tweat-repr {
+    margin-top: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    div {
       display: flex;
-      margin-top: 1rem;
-      svg {
-        transform: scale(0.9);
-        stroke: rgb(148, 148, 148);
+      align-items: center;
+      span {
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: 0.2s ease-in-out;
+        svg {
+          transform: scale(0.8);
+        }
+        &:hover {
+          transition: 0.2s ease-in-out;
+          background: rgba(52, 211, 153, 0.1);
+          svg {
+            stroke: #34d399;
+          }
+        }
       }
       div {
-        width: 6rem;
-        cursor: pointer;
-        display: inline-block;
-        span {
-          margin-left: 0.5rem;
-          font-size: 0.75em;
-        }
-        .inner {
-          display: flex;
-          align-items: center;
-        }
+        margin-left: 0.25rem;
       }
-      div:not(:last-child) {
-        margin-right: 6rem;
-      }
-      .comments:hover {
+      span:hover + div {
         color: #34d399;
+      }
+    }
+    .tweat-like {
+      .liked {
         svg {
-          stroke: #34d399;
+          fill: crimson;
+          stroke: crimson;
         }
       }
-      .like:hover {
+      .liked + div {
         color: crimson;
+      }
+      span:hover {
+        background-color: rgba(220, 20, 60, 0.1);
         svg {
           stroke: crimson;
         }
       }
-      .share:hover {
-        color: #34d399;
+      span:hover + div {
+        color: crimson;
+      }
+    }
+    .tweat-share {
+      span:hover {
+        background-color: rgba(91, 91, 241, 0.1);
         svg {
-          stroke: #34d399;
+          stroke: rgb(91, 91, 241);
+          transition: 0.2s ease-in-out;
         }
+      }
+      span:hover + div {
+        color: rgb(91, 91, 241);
       }
     }
   }
-  .content-repr {
-    margin-top: 1rem;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    div {
-      display: flex;
-      .liked {
-        fill: crimson;
-        stroke: crimson;
-      }
-      .liked + span {
-        color: crimson;
-      }
-      svg {
-        stroke: rgb(60, 60, 60);
-        transition: 0.2s ease-in-out;
-        transform: scale(1.5);
-        padding: 0.31rem;
-        border-radius: 100%;
-      }
-      span {
-        color: rgb(60, 60, 60);
-        transition: 0.2s ease-in-out;
-        margin-left: 0.65rem;
+  &:hover {
+    transition: 0.2s ease-in-out;
+    background-color: rgb(15, 15, 15);
+  }
+}
+.user-replies {
+  border-top: 1px solid #222;
+  .comment {
+    padding: 1rem 1.5rem 1rem 1.5rem;
+    display: flex;
+    .comment-info {
+      img {
+        border-radius: 4px;
+        width: 23.5px;
+        height: 23.5px;
       }
     }
-    .comments {
-      svg:hover {
-        stroke: #34d399;
-        transition: 0.2s ease-in-out;
-        background-color: rgb(52, 211, 153, 0.1);
-      }
-      svg:hover + span {
-        transition: 0.2s ease-in-out;
+    .comment-content {
+      margin-left: 0.5rem;
+      .username {
         color: #34d399;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+      small {
+        margin-left: 0.5rem;
+        color: #bbb;
       }
     }
-    .likes {
-      svg:hover {
-        stroke: crimson;
-        transition: 0.2s ease-in-out;
-        background-color: rgba(220, 20, 60, 0.1);
-      }
-      svg:hover + span {
-        transition: 0.2s ease-in-out;
-        color: crimson;
-      }
-    }
-    .shares {
-      svg:hover {
-        stroke: #34d399;
-        transition: 0.2s ease-in-out;
-        background-color: rgb(52, 211, 153, 0.1);
-      }
-      svg:hover + span {
-        transition: 0.2s ease-in-out;
-        color: #34d399;
-      }
+    &:hover {
+      background-color: rgb(20, 20, 20);
+      border-top-right-radius: 4px;
+      border-bottom-right-radius: 4px;
     }
   }
 }
-
-.comment-tweat {
-  z-index: 999;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  max-width: 100%;
-  height: 100%;
-  max-height: 100%;
-  background-color: rgba(17, 17, 17, 0.6);
-  .inner {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    .sending-reply {
-      border-color: #34d399 !important;
-    }
-    .submit-reply {
-      background-color: rgb(52, 211, 153, 0.1) !important;
-    }
-    .wrap {
-      border-radius: 4px;
-      width: 36rem;
-      padding: 1.5rem 2rem 1rem 2rem;
-      background-color: #111;
-      border: 1px solid #222;
-      color: #ccc;
-      display: flex;
-      flex-direction: column !important;
-      p {
-        word-break: break-all;
-        margin: 0.5rem;
-        padding: 0.25rem 0.25rem 0.35rem 0.75rem;
-        border-left: 1px solid #222;
-      }
-      small {
-        span {
-          color: #34d399;
-        }
-      }
-      #content-comment {
-        margin-top: 0.5rem;
-        word-break: break-all;
-      }
-      [contentEditable="true"]:empty:not(:focus):before {
-        content: attr(data-ph);
-        color: grey;
-      }
-      [contenteditable="true"] {
-        font-size: 1.1em;
-        padding: 0.5rem 0 1rem 0;
-        &:focus {
-          color: rgb(192, 192, 192) !important;
-          outline: 0px solid transparent !important;
-        }
-      }
-      .btn-wrapper {
-        display: flex;
-        justify-content: flex-end;
-        div {
-          cursor: pointer;
-        }
-        div:not(:first-of-type) {
-          margin-left: 0.5rem;
-        }
-        .cancel {
-          padding: 0.5rem 2rem 0.5rem 2rem;
-        }
-        .reply {
-          border-radius: 4px;
-          border: 1px solid #34d399;
-          padding: 0.5rem 2rem 0.5rem 2rem;
-          transition: 0.2s ease-in-out;
-          &:hover {
-            transition: 0.2s ease-in-out;
-            background-color: rgb(52, 211, 153, 0.1);
-          }
-        }
-      }
-      &.--exceeded {
-        border-color: rgb(141, 12, 38) !important;
-        [contenteditable="true"] {
-          color: rgb(141, 12, 38) !important;
-          &:focus {
-            color: rgb(141, 12, 38) !important;
-            outline: none !important;
-            border-color: rgb(141, 12, 38) !important;
-          }
-        }
-        .reply {
-          border: 1px solid rgb(141, 12, 38) !important;
-          color: rgb(141, 12, 38) !important;
-          &:hover {
-            background-color: #111 !important;
-          }
-        }
-      }
+.continue-thread {
+  border-bottom: 1px solid #222;
+  border-top: 1px solid #222;
+  display: flex;
+  a {
+    padding: 1rem;
+    width: 100%;
+    display: inline;
+    &:hover {
+      color: #34d399;
+      background: rgb(20, 20, 20);
     }
   }
+}
+.border-bottom {
+  border-bottom: 1px solid #222;
+}
+.tweat-skeleton {
+  margin: 1rem 0 3rem 0;
+  padding: 1.5rem 1.5rem 1.75rem 1.5rem;
+  cursor: pointer;
+  border-top: 1px solid #222;
+  border-bottom: 1px solid #222;
+  transition: 0.2s ease-in-out;
+  animation: backgroundPulse 1s ease-out;
+  animation-iteration-count: infinite;
+  @keyframes backgroundPulse {
+    0% {
+      opacity: 0.9;
+    }
+    25% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    75% {
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 0.9;
+    }
+  }
+  .skeleton-info {
+    display: flex;
+    align-items: center;
+    .skeleton-img {
+      width: 30px;
+      height: 30px;
+      background: #222;
+      border-radius: 4px;
+    }
+    span {
+      margin-left: 0.5rem;
+      width: 80px;
+      height: 13px;
+      background: #222;
+      border-radius: 2px;
+    }
+  }
+  .skeleton-content {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    .bar-1 {
+      background: #222;
+      border-radius: 3px;
+      width: 26rem !important;
+      height: 13px;
+    }
+    .bar-2 {
+      margin-top: 0.75rem;
+      background: #222;
+      border-radius: 3px;
+      width: 22rem !important;
+      height: 13px;
+    }
+  }
+}
+.bottom-end {
+  margin: 2rem 0 1rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: context-menu;
 }
 </style>

@@ -1,110 +1,82 @@
 <template>
-  <div class="user-profile">
-    <Header :user="state.userData" :inUserView="state.inUserView" />
-    <div class="user-wrapper" id="go-top">
-      <div class="topnav">
-        <div class="wrapper">
-          <div class="return-back">
+  <div id="tweatter-app">
+    <Header />
+    <section>
+      <div class="section-top">
+        <div class="top-return">
+          <span>
             <router-link to="/">
-              <FeatherArrowLeft />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="feather feather-arrow-left"
+                data-v-01285034=""
+              >
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
             </router-link>
-          </div>
-          <p>
-            <a href="#go-top">{{state.userData.username}}</a>
-          </p>
+          </span>
+          <h2 @click="goTop">{{state.user.username}}</h2>
         </div>
+        <div class="top-left"><h2>T</h2></div>
       </div>
-      <div class="user-porfile">
+      <div class="section-cover">
         <div class="background-cover"></div>
-        <div class="inner">
-          <div class="user-top">
-            <div>
-              <img
-                id="current-avatar"
-                :src="state.userData.avatar"
-                alt=""
-                srcset=""
-              />
-            </div>
+        <div class="user-avatar">
+          <img
+            src="https://drive.google.com/uc?id=1aW7hzFNDk5q1igkvnJCoYpbZIdsdi2D0&export=download"
+            alt=""
+            width="140"
+            height="140"
+          />
+        </div>
+        <div class="user-content">
+          <div
+            class="btn-wrapper"
+            v-if="state.user.username == state.thisRoute"
+          >
+            <button>Edit profile</button>
           </div>
-          <div class="about">
-            <p class="text-xl font-semibold">{{ state.userData.username }}</p>
+          <div v-else class="btn-wrapper">
+            <button>Follow</button>
+          </div>
+          <div class="username">sakurajima</div>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="wrapper">
+          <div
+            class="tweats"
+            :class="{ active: state.currentTab == state.thisRoute }"
+          >
+            <router-link :to="state.link.tweat"> Tweats </router-link>
+          </div>
+          <div
+            class="replies"
+            :class="{ active: state.currentTab == 'replies' }"
+          >
+            <router-link :to="state.link.reply"> Replies </router-link>
+          </div>
+          <div class="medias" :class="{ active: state.currentTab == 'medias' }">
+            <router-link :to="state.link.media"> Medias </router-link>
+          </div>
+          <div class="likes" :class="{ active: state.currentTab == 'likes' }">
+            <router-link :to="state.link.likes"> Likes </router-link>
           </div>
         </div>
       </div>
-      <div class="tabs-wrapper">
-        <div class="tabs">
-          <div>
-            <router-link
-              :class="{
-                active:
-                  thisTab == 'tweat' ||
-                  thisTab == state.userData.username,
-              }"
-              :to="state.links.tweat"
-              >tweats
-            </router-link>
-          </div>
-          <div>
-            <router-link
-              :class="{ active: thisTab == 'replies' }"
-              :to="state.links.replies"
-              >replies
-            </router-link>
-          </div>
-          <div>
-            <router-link
-              :class="{ active: thisTab == 'media' }"
-              :to="state.links.media"
-              >media
-            </router-link>
-          </div>
-          <div>
-            <router-link
-              :class="{ active: thisTab == 'likes' }"
-              :to="state.links.likes"
-              >likes
-            </router-link>
-          </div>
-        </div>
-      </div>
-      <div class="user-tweat-items" v-if="!state.requestError.error">
-        <div class="suggested">
-          <span class="font-medium">Suggested For You</span>
-          <div class="inner">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat ea
-            a sit laborum cumque quam id corrupti! Harum nam iure magnam nulla
-            earum debitis repudiandae qui maxime, id inventore quis!
-          </div>
-        </div>
+      <div class="user-tweats-wrapper">
         <router-view />
       </div>
-      <div class="request-error" v-else>
-        <div>
-          {{ state.requestError.msg }}
-        </div>
-        <div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="feather feather-refresh-cw"
-          >
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <polyline points="1 20 1 14 7 14"></polyline>
-            <path
-              d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
-            ></path>
-          </svg>
-        </div>
-      </div>
-    </div>
+    </section>
     <Sidebar />
   </div>
 </template>
@@ -112,227 +84,160 @@
 <script>
 import { reactive } from "vue";
 import { useRoute } from "vue-router";
-import axiosInstance from "@/plugin/axios";
 
-import Header from "@/components/header/Header";
-import Sidebar from "@/components/header/Sidebar";
-import FeatherArrowLeft from "@/components/icons/FeatherArrowLeft";
+import Header from "@/components/headers/Header";
+import Sidebar from "@/components/headers/Sidebar";
 
 export default {
   name: "UserProfile",
   components: {
     Header,
     Sidebar,
-    FeatherArrowLeft,
-  },
-  data() {
-    return {
-      thisTab: "",
-    }
   },
   setup() {
     const route = useRoute();
-
     const state = reactive({
-      userData: {
-        username: "",
-        avatar: "",
+      user: {
+        username: localStorage.getItem("username"),
+        avatar: localStorage.getItem("avatar"),
       },
-      inUserView: true,
-      links: {
-        tweat: "",
-        media: "",
-        likes: "",
-        replies: "",
+      link: {
+        tweat: `/${route.params.username}`,
+        reply: `/${route.params.username}/replies`,
+        media: `/${route.params.username}/medias`,
+        likes: `/${route.params.username}/likes`,
       },
-      currRoute: route.params,
-      requestError: {
-        error: false,
-        msg:
-          "There was an error when rendering the page, try to realod the page.",
-      },
+      thisRoute: route.params.username,
+      currentTab: route.fullPath.split("/").pop().toString(),
     });
-
-    async function fetchUserData(username = null) {
-      let access = localStorage.getItem("access_token");
-      let reqUsr = route.params.username;
-      let unames = username ? username : reqUsr;
-
-      const response = await axiosInstance({
-        method: "GET",
-        url: `${unames}`,
-        headers: {
-          Authorization: `Bearer ${access}`,
-          "Content-Type": "application/json;charset=UTF-8",
-        },
-      }).catch((err) => {
-        console.error(err);
-      });
-
-      if (typeof response === "object") {
-        state.userData.username = response.data.data.username;
-        state.userData.avatar = response.data.data.avatar;
-        state.links.tweat = `/${unames}`;
-        state.links.media = `/${unames}/media`;
-        state.links.likes = `/${unames}/likes`;
-        state.links.replies = `/${unames}/replies`;
-      } else {
-        state.requestError.error = true;
-      }
-    }
 
     return {
       state,
-      fetchUserData,
     };
-  },
-  async created() {
-    await this.fetchUserData();
-  },
-  mounted() {
-    var vm = this;
-    vm.thisTab = this.$route.fullPath.split("/").pop().toString();
-    /**
-     * Remove all `domain.com/#id` from url
-     */
-    //Get all the hyperlink elements
-    var links = document.getElementsByTagName("a");
-
-    //Browse the previously created array
-    Array.prototype.forEach.call(links, function (elem) {
-      //Get the hyperlink target and if it refers to an id go inside condition
-      var elemAttr = elem.getAttribute("href");
-      if (elemAttr && elemAttr.includes("#")) {
-        //Replace the regular action with a scrolling to target on click
-        elem.addEventListener("click", function (ev) {
-          ev.preventDefault();
-          //Scroll to the target element using replace() and regex to find the href's target id
-          document.getElementById(elemAttr.replace(/#/g, "")).scrollIntoView({
-            block: "start",
-            inline: "nearest",
-          });
-        });
-      }
-    });
   },
   watch: {
     $route(to) {
-      this.thisTab = to.fullPath.split("/").pop().toString();
-      if (to.params.username == localStorage.getItem("username")) {
-        this.fetchUserData(to.params.username);
-      }
+      this.state.currentTab = to.fullPath.split("/").pop().toString();
     },
   },
+  methods: {
+    goTop() {
+      window.scrollTo(0, 0);
+    }
+  }
 };
 </script>
 
 <style lang="scss" scoped>
-.user-profile {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-}
-.user-wrapper {
-  font-family: "Roboto", sans-serif;
+section {
   grid-column: span 6;
-  .topnav {
+}
+
+section {
+  margin: 0 3rem 0 3rem;
+  padding-bottom: 1rem;
+  border: 1px solid #222;
+  border-top: none !important;
+  border-bottom: none !important;
+  background: rgb(15, 15, 15);
+  .section-top {
+    padding: 0.5rem 1rem 0.5rem 1rem;
     top: 0;
-    position: -webkit-sticky;
-    position: sticky;
     z-index: 999;
+    position: sticky;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #222;
     background: #111;
-    margin: 0 3rem 0 3rem;
-    .wrapper {
-      padding: 1rem;
-      background-color: #111;
+    .top-return {
       display: flex;
       align-items: center;
-      border: 1px solid #222;
-      border-top: none;
-      svg {
-        transition: 0.2s ease-in-out;
-        stroke: #bbb;
-        border-radius: 50%;
-        transform: scale(1.5);
-        padding: 0.31rem;
-        &:hover {
-          stroke: #34d399;
-          transition: 0.2s ease-in-out;
-          background-color: rgb(52, 211, 153, 0.1);
-        }
-      }
-      p {
-        margin-left: 0.75rem;
-        font-weight: 600;
-        font-size: 1.3em;
-        color: #bbb;
-        a:hover {
-          text-decoration: underline;
-        }
-      }
-    }
-  }
-  .user-porfile {
-    padding-bottom: 8rem;
-    margin: 0 3rem 0 3rem;
-    border: 1px solid #222;
-    border-top: none !important;
-    border-bottom: none !important;
-    .background-cover {
-      z-index: -99;
-      // position: absolute;
-      width: auto;
-      height: 170px;
-      max-width: 586px;
-      max-height: 170px;
-      background-color: rgb(24, 24, 24);
-    }
-    .inner {
-      z-index: 99;
-      position: absolute;
-      top: 10rem;
-      padding: 0 1.5rem 1.5rem 1.5rem;
-      .user-top {
+      span {
         display: flex;
-        justify-content: space-between;
-        label {
-          cursor: pointer;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          position: absolute;
+        align-items: center;
+        transition: 0.2s ease-in-out;
+        a {
           border-radius: 50%;
-          width: 110px;
-          height: 110px;
-          // background-color: rgba(17, 17, 17, 0.5);
+          padding: 0.3rem;
         }
-        .change-avatar {
-          display: none;
+        svg {
+          transform: scale(0.9);
+          transition: 0.2s ease-in-out;
         }
-        img {
-          cursor: pointer;
-          background-color: #111;
-          border: 5px solid #111;
-          border-radius: 50%;
-          width: 130px;
-          height: 130px;
+        &:hover {
+          transition: 0.2s ease-in-out;
+          a {
+            background: rgba(52, 211, 153, 0.1);
+          }
+          svg {
+            stroke: #34d399;
+            transition: 0.2s ease-in-out;
+          }
         }
       }
-      .about {
-        margin-top: 0.25rem;
-        color: #ccc;
+      h2 {
+        cursor: pointer;
+        margin-left: 1rem;
+        font-size: 1.2em;
+        font-weight: 600;
+      }
+    }
+    .top-left {
+      padding: 0.5rem;
+      font-size: 1.2em;
+      font-weight: 600;
+    }
+  }
+  .section-cover {
+    border-bottom: 1px solid #222;
+    .background-cover {
+      width: auto;
+      height: 13rem;
+      background: #333;
+      position: relative;
+    }
+    .user-avatar {
+      margin: 0 2rem 0 2rem;
+      position: absolute;
+      top: 13rem;
+      img {
+        border: 3px solid rgb(15, 15, 15);
+        border-radius: 50%;
+      }
+    }
+    .user-content {
+      .btn-wrapper {
+        text-align: right;
+        margin: 1rem;
+        button {
+          padding: 0.5rem 1rem 0.5rem 1rem;
+          color: #34d399;
+          border: 1px solid #34d399;
+          border-radius: 4px;
+        }
+        button:hover {
+          background: rgba(52, 211, 153, 0.1);
+        }
+      }
+      .username {
+        margin: 1.5rem 2rem 1rem 2rem;
+        font-size: 1.3em;
+        font-weight: 600;
       }
     }
   }
-  .tabs-wrapper {
-    margin: 0 3rem 0 3rem;
-    color: #bbb;
-    .tabs {
+  .tabs {
+    height: 60px;
+    top: 3.8625rem !important;
+    position: sticky !important;
+    z-index: 999;
+    background: #111;
+    border-bottom: 1px solid #222;
+    .wrapper {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      border: 1px solid #222;
-      height: 60px;
       .active {
-        transition: none !important;
         color: #34d399;
         border-bottom: 3px solid #34d399;
       }
@@ -344,42 +249,15 @@ export default {
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: 1em;
+          padding: 1rem 1rem 1rem 1rem;
           width: 100%;
           height: 100%;
-          &:hover {
-            transition: 0.2s ease-in-out;
-            color: #34d399;
-            background-color: rgb(52, 211, 153, 0.1);
-          }
         }
       }
-    }
-  }
-  .user-tweat-items {
-    margin: 2rem 3rem 2rem 3rem;
-    .suggested {
-      color: #ccc;
-      .inner {
-        margin-top: 1rem;
-        height: 18rem;
-        max-height: 18rem;
-        border-radius: 4px;
-        padding: 1rem;
-        border: 1px solid #222;
+      div:hover {
+        color: #34d399;
+        background: rgba(52, 211, 153, 0.1);
       }
-    }
-  }
-  .request-error {
-    color: #ccc;
-    padding-top: 2rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    svg {
-      margin-top: 0.5rem;
-      transform: scale(0.7);
     }
   }
 }

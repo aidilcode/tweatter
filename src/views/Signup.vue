@@ -2,18 +2,20 @@
   <div class="login-wrapper">
     <div class="image"></div>
     <div class="forms">
-      <div class="inner-loading" v-if="reciveData">
+      <div class="inner-loading" v-if="sendData">
         <LoadingSpinner />
         <div>
-          <span>wait for logging in ...</span>
+          <span>wait for us to proccess your information ...</span>
         </div>
       </div>
       <div class="inner" v-else>
         <h1 class="sub text-6xl font-extrabold tracking-widest">
           Content Information
         </h1>
+        <h1 class="sub-tweat hidden text-6xl font-extrabold tracking-widest">
+          Tweatter
+        </h1>
         <div class="wrap">
-          <h3 class="text-3xl font-bold">Join Tweatter Today</h3>
           <form
             @submit.prevent="loginTweat"
             class="signin"
@@ -23,7 +25,7 @@
               type="email"
               name="email"
               id="email"
-              placeholder="me@mywebsite.com"
+              placeholder="me@gmail.com"
               v-model="inputEmail"
             />
             <input
@@ -33,13 +35,20 @@
               placeholder="************"
               v-model="inputPaswd"
             />
+            <input
+              type="username"
+              name="username"
+              id="username"
+              placeholder="your username"
+              v-model="inputUsername"
+            />
             <div class="buttons">
               <button type="submit">
-                <span class="text-xl font-semibold">Log in</span>
+                <span class="text-xl font-semibold">Join</span>
               </button>
               <div>
                 <a href="#">forgot password?</a>
-                <router-link to="/join">Sign up for Tweatter</router-link>
+                <router-link to="/login">already have account?</router-link>
               </div>
             </div>
           </form>
@@ -60,9 +69,10 @@ export default {
   },
   data() {
     return {
-      reciveData: false,
+      sendData: false,
       inputEmail: "",
       inputPaswd: "",
+      inputUsername: "",
       formError: false,
     };
   },
@@ -76,28 +86,23 @@ export default {
   },
   methods: {
     async loginTweat() {
-      this.reciveData = true;
+      this.sendData = true;
       const error = await axiosInstance
-        .post('token/', {
+        .post('register/', {
           email: this.inputEmail,
+          username: this.inputUsername,
           password: this.inputPaswd,
         })
-        .then((res) => {
-          localStorage.setItem("access_token", res.data.access);
-          localStorage.setItem("refresh_token", res.data.refresh);
-          localStorage.setItem("username", res.data.username);
-          localStorage.setItem("avatar", res.data.avatar);
-          localStorage.setItem("isLogin", true);
-          axiosInstance.defaults.headers["Authorization"] =
-            "Bearer " + localStorage.getItem("access_token");
+        .then(() => {
+          this.$router.push("/login");
         })
         .catch(() => {
           this.formError = true;
         });
 
       if (error == null) {
-        this.$router.push("/");
-        this.reciveData = false;
+        this.formError = true;
+        this.sendData = false;
       }
     },
   },
@@ -114,17 +119,10 @@ export default {
 .image {
   overflow: hidden;
   position: relative;
-  background: url("../../assets/images/pexels-photo-4252898.jpeg");
+  background: url("../assets/images/pexels-photo-4252898.jpeg");
   background-size: cover;
   background-repeat: no-repeat;
   grid-column: span 6;
-}
-.form-error {
-  input {
-    outline: none;
-    border: 1px solid crimson;
-    color: crimson;
-  }
 }
 .forms {
   font-family: "Montserrat", sans-serif;
@@ -152,7 +150,7 @@ export default {
   .inner {
     color: #ddd;
     .wrap {
-      margin-top: 6rem;
+      margin-top: 4rem;
       .signin {
         display: flex;
         flex-direction: column;
@@ -189,6 +187,83 @@ export default {
             }
           }
         }
+      }
+    }
+  }
+}
+.form-error {
+  input {
+    outline: none;
+    border: 1px solid crimson;
+    color: crimson;
+  }
+}
+.hidden {
+  display: hidden;
+}
+// media queries
+@media only screen and (max-width: 1000px) {
+  .image {
+    grid-column: span 5;
+  }
+  .forms {
+    grid-column: span 7;
+  }
+}
+@media only screen and (max-width: 860px) {
+  .image {
+    grid-column: span 4;
+  }
+  .forms {
+    grid-column: span 8;
+  }
+}
+@media only screen and (max-width: 730px) {
+  .image {
+    grid-column: span 3;
+  }
+  .forms {
+    grid-column: span 9;
+  }
+}
+@media only screen and (max-width: 640px) {
+  .image {
+    display: none !important;
+  }
+  .forms {
+    grid-column: span 12;
+  }
+}
+@media only screen and (max-width: 480px) {
+  .forms {
+    padding: 1rem !important;
+    .inner {
+      .sub {
+        display: none !important;
+      }
+      .sub-tweat {
+        font-size: 4em !important;
+        display: block !important;
+      }
+      .wrap {
+        h3 {
+          font-size: 1.5em !important;
+        }
+      }
+    }
+  }
+}
+@media only screen and (max-width: 370px) {
+  .forms {
+    .inner {
+      .sub-tweat {
+        display: block !important;
+        font-size: 3.5em !important;
+      }
+    }
+    .buttons {
+      div > a {
+        font-size: 0.9em;
       }
     }
   }
