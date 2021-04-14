@@ -102,8 +102,9 @@ export default {
       .then(() => {
         this.state.newTweatContent = "";
         this.state.newImageContent = "";
-        this.$refs.tweatImage.src = "#";
-        this.state.forms.isSubmit = false;
+        this.$refs.tweatImage.src  = "#";
+        this.state.forms.isSubmit  = false;
+        this.state.getImageContent = false;
         this.$emit("createTweat");
       });
     },
