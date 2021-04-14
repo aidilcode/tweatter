@@ -24,7 +24,7 @@
               </svg>
             </router-link>
           </span>
-          <h2 @click="goTop">{{state.user.username}}</h2>
+          <h2 @click="goTop">{{state.userRequest.username}}</h2>
         </div>
         <div class="top-left"><h2>T</h2></div>
       </div>
@@ -32,7 +32,7 @@
         <div class="background-cover"></div>
         <div class="user-avatar">
           <img
-            :src="state.user.avatar"
+            :src="state.userRequest.avatar"
             alt=""
             width="140"
             height="140"
@@ -48,7 +48,7 @@
           <div v-else class="btn-wrapper">
             <button>Follow</button>
           </div>
-          <div class="username">{{ state.thisRoute }}</div>
+          <div class="username">{{ state.userRequest.username }}</div>
         </div>
       </div>
       <div class="tabs">
@@ -74,7 +74,7 @@
         </div>
       </div>
       <div class="user-tweats-wrapper">
-        <router-view />
+        <router-view :key="$route.fullPath" />
       </div>
     </section>
     <Sidebar />
@@ -84,6 +84,7 @@
 <script>
 import { reactive } from "vue";
 import { useRoute } from "vue-router";
+import axiosInstance from "@/plugin/axios";
 
 import Header from "@/components/headers/Header";
 import Sidebar from "@/components/headers/Sidebar";
@@ -101,6 +102,7 @@ export default {
         username: localStorage.getItem("username"),
         avatar: localStorage.getItem("avatar"),
       },
+      userRequest: Object,
       link: {
         tweat: `/${route.params.username}`,
         reply: `/${route.params.username}/replies`,
@@ -111,20 +113,46 @@ export default {
       currentTab: route.fullPath.split("/").pop().toString(),
     });
 
+    async function fetchRequestedUser(username = null) {
+      let requestsUser = route.params.username;
+      let usernameUser = username ? username : requestsUser;
+
+      await axiosInstance({
+        method: "GET",
+        url: usernameUser,
+      })
+      .then((res) => {
+        state.userRequest = res.data.data;
+      })
+    }
+
     return {
       state,
+      fetchRequestedUser,
     };
   },
   watch: {
     $route(to) {
       this.state.currentTab = to.fullPath.split("/").pop().toString();
+      if (to.params.username == localStorage.getItem("username")) {
+        this.state.thisRoute  = to.params.username;
+        this.state.link.tweat = `/${to.params.username}`;
+        this.state.link.reply = `/${to.params.username}/replies`;
+        this.state.link.media = `/${to.params.username}/medias`;
+        this.state.link.likes = `/${to.params.username}/likes`;
+
+        this.fetchRequestedUser(to.params.username);
+      }
     },
   },
   methods: {
     goTop() {
       window.scrollTo(0, 0);
     }
-  }
+  },
+  async created() {
+    await this.fetchRequestedUser()
+  },
 };
 </script>
 

@@ -129,15 +129,25 @@
               :key="comment.id"
             >
               <div class="comment-info">
-                <router-link :to="comment.users__username">
+                <router-link
+                  :to="{
+                    name: 'UserProfile',
+                    params: { username: comment.users__username },
+                  }"
+                >
                   <img :src="comment.users__avatar_url" />
                 </router-link>
               </div>
               <div class="comment-content">
                 <p>
-                  <router-link :to="comment.users__username" class="username">{{
-                    comment.users__username
-                  }}</router-link>
+                  <router-link
+                    :to="{
+                      name: 'UserProfile',
+                      params: { username: comment.users__username },
+                    }"
+                    class="username"
+                    >{{ comment.users__username }}</router-link
+                  >
                   <small>replying to @{{ tweat.author.username }}</small>
                 </p>
                 <p class="content">{{ comment.content }}</p>

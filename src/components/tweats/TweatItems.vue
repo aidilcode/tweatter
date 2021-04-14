@@ -16,7 +16,12 @@
         class="tweat-link"
       >
         <div class="tweat-info">
-          <router-link :to="tweat.author.username">
+          <router-link
+            :to="{
+              name: 'UserProfile',
+              params: { username: tweat.author.username },
+            }"
+          >
             <img :src="tweat.author.avatar_url" alt="" width="30" height="30" />
             <span class="tweat-username">{{ tweat.author.username }}</span>
           </router-link>
@@ -94,15 +99,25 @@
             :key="comment.id"
           >
             <div class="comment-info">
-              <router-link :to="comment.users__username">
+              <router-link
+                :to="{
+                  name: 'UserProfile',
+                  params: { username: comment.users__username },
+                }"
+              >
                 <img :src="comment.users__avatar_url" />
               </router-link>
             </div>
             <div class="comment-content">
               <p>
-                <router-link :to="comment.users__username" class="username">{{
-                  comment.users__username
-                }}</router-link>
+                <router-link
+                  :to="{
+                    name: 'UserProfile',
+                    params: { username: comment.users__username },
+                  }"
+                  class="username"
+                  >{{ comment.users__username }}</router-link
+                >
                 <small>replying to @{{ tweat.author.username }}</small>
               </p>
               <p class="content">{{ comment.content }}</p>
@@ -110,7 +125,13 @@
           </div>
         </div>
         <div v-if="!detailTweat" class="continue-thread">
-          <router-link to="/">continue thread</router-link>
+          <router-link
+            :to="{
+              name: 'TweatDetail',
+              params: { username: tweat.author.username, id: tweat.id },
+            }"
+            >continue thread</router-link
+          >
         </div>
       </div>
       <div v-else class="border-bottom"></div>
@@ -180,7 +201,7 @@ export default {
     detailTweat: {
       type: Boolean,
       required: false,
-    }
+    },
   },
   data() {
     return {
