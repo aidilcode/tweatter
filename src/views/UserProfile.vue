@@ -32,7 +32,7 @@
         <div class="background-cover"></div>
         <div class="user-avatar">
           <img
-            src="https://drive.google.com/uc?id=1aW7hzFNDk5q1igkvnJCoYpbZIdsdi2D0&export=download"
+            :src="{{state.user.avatar}}"
             alt=""
             width="140"
             height="140"
