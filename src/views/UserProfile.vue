@@ -32,7 +32,7 @@
         <div class="background-cover"></div>
         <div class="user-avatar">
           <img
-            :src="{{state.user.avatar}}"
+            :src="state.user.avatar"
             alt=""
             width="140"
             height="140"
