@@ -81,7 +81,8 @@
         </div>
       </div>
       <div class="user-tweats-wrapper">
-        <router-view :key="$route.fullPath" />
+        <!-- <router-view :key="$route.fullPath" /> -->
+        <router-view :key="state.key" />
       </div>
     </section>
     <Sidebar />
@@ -92,6 +93,7 @@
 import { reactive } from "vue";
 import { useRoute } from "vue-router";
 import axiosInstance from "@/plugin/axios";
+import routes from "@/router/index";
 
 import Header from "@/components/headers/Header";
 import Sidebar from "@/components/headers/Sidebar";
@@ -117,6 +119,7 @@ export default {
         media: `/${route.params.username}/medias`,
         likes: `/${route.params.username}/likes`,
       },
+      key: null,
       userRequest: Object,
       editProfile: false,
       updatedProfile: false,
@@ -168,12 +171,30 @@ export default {
     updatedUser() {
       this.state.user.username = localStorage.getItem("username");
       this.state.user.avatar = localStorage.getItem("avatar");
+      this.state.userRequest.username = localStorage.getItem("username");
+      this.state.userRequest.avatar = localStorage.getItem("avatar");
       this.state.updatedProfile = true;
-    }
+
+      // this.state.key = this.$route.fullPath;
+      console.log(this.$route.fullPath)
+      this.state.key = this.$route.fullPath;
+    },
   },
   async created() {
     await this.fetchRequestedUser();
   },
+  mounted() {
+    var vm = this;
+    routes.beforeEach((to, from, next) => {
+      // to and from are both route objects. must call `next`.
+      if (to.matched.some(record => record.meta.reuse === false)) {
+        vm.state.key = to.path
+      } else {
+        vm.state.key = null
+      }
+      next()
+    })
+  }
 };
 </script>
 

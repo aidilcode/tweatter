@@ -94,8 +94,10 @@ export default {
 
       let access = localStorage.getItem("access_token");
       let formData = new FormData();
-      if (this.changes.avatar) {
-        formData.append("avatar", this.changes.avatar);
+
+      if (this.changes.avatars) {
+        console.log("edit avatar")
+        formData.append("avatar", this.changes.avatars);
       }
       formData.append("bio", this.changes.bio);
       formData.append("username", this.changes.username);
@@ -112,12 +114,13 @@ export default {
       .then((res) => {
         this.savingChanges = false;
         this.changes.username = res.data.data.username;
-        if (this.changes.avatar) {
-          this.changes.avatar = res.data.data.avatar;
+        if (this.changes.avatars) {
+          this.changes.avatars = res.data.data.avatar;
         }
 
         localStorage.setItem("avatar", res.data.data.avatar);
         localStorage.setItem("username", res.data.data.username);
+
         this.$emit("updatedUser");
         this.$router.push(res.data.data.username);
       })

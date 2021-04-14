@@ -52,6 +52,7 @@ const routes = [
         path: "",
         name: "UserProfile",
         component: UserTweat,
+        meta: { reuse: false },
       },
       {
         path: "medias",
