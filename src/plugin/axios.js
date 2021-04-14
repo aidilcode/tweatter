@@ -2,7 +2,7 @@ import axios from 'axios';
 
 
 // const baseURL = 'http://localhost:8000/api/';
-const baseURL = 'https://tweatter-api.herokuapp.com/api/'
+const baseURL = 'https://api-tweatter.herokuapp.com/api/'
 const axiosInstance = axios.create({
   baseURL: baseURL,
   headers: {

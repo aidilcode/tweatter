@@ -97,13 +97,13 @@
       <div class="nav-bottom">
         <div class="avatar-bottom">
           <img
-            src="https://drive.google.com/uc?id=1aW7hzFNDk5q1igkvnJCoYpbZIdsdi2D0&export=download"
+            :src="avatar"
             alt=""
             width="35"
             height="35"
           />
         </div>
-        <div class="content">#</div>
+        <div class="content" @click="logout">#</div>
       </div>
     </nav>
     <Aside />
@@ -111,12 +111,49 @@
 </template>
 
 <script>
+import axiosInstance from "@/plugin/axios";
+
 import Aside from "./Aside";
 
 export default {
   name: "Header",
   components: {
     Aside,
+  },
+  data() {
+    return {
+      avatar: localStorage.getItem("avatar"),
+    }
+  },
+  methods: {
+    // user logout function
+    async logout() {
+      let access = localStorage.getItem("access_token");
+      let refresh = localStorage.getItem("refresh_token");
+
+      await axiosInstance({
+        method: "POST",
+        url: "logout/",
+        data: { refresh_token: refresh },
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      })
+        .catch(() => {})
+        .then(() => {
+          this.$router.push("/login");
+        });
+
+      // remove all related user in local-storage
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("username");
+      localStorage.removeItem("avatar");
+      // set header auth to null, in order to
+      // prevent user action after logout
+      axiosInstance.defaults.headers["Authorization"] = null;
+    },
   },
 };
 </script>
