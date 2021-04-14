@@ -86,7 +86,7 @@
           </div>
         </div>
       </router-link>
-      <div v-if="loadThreadComment && tweat.comments.length > 1">
+      <div v-if="loadThreadComment && tweat.comments.length > 0">
         <div class="user-replies">
           <div
             class="comment"

@@ -48,7 +48,7 @@
           <div v-else class="btn-wrapper">
             <button>Follow</button>
           </div>
-          <div class="username">sakurajima</div>
+          <div class="username">{{ state.thisRoute }}</div>
         </div>
       </div>
       <div class="tabs">
