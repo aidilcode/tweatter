@@ -1,4 +1,12 @@
 <template>
+  <div v-if="isLogout" class="overlay">
+    <div class="inner">
+      <div class="wrap">
+        <LoadingSpinner />
+        logging out
+      </div>
+    </div>
+  </div>
   <header>
     <nav>
       <div class="nav-logo">
@@ -33,19 +41,20 @@
       </ul>
       <div class="nav-bottom">
         <div class="avatar-bottom">
-          <img
-            :src="avatar"
-            alt=""
-            width="35"
-            height="35"
-          />
+          <router-link
+            :to="{
+              name: 'UserProfile',
+              params: { username: username },
+            }"
+            ><img :src="avatar" alt="" width="35" height="35"
+          /></router-link>
         </div>
         <div class="content" @click="logout">
           <span><FeatherLogout /></span>
         </div>
       </div>
     </nav>
-    <Aside />
+    <Aside :updatedUserProfile="updatedUserProfile" />
   </header>
 </template>
 
@@ -59,6 +68,7 @@ import FeatherBookmark from "@/components/icons/FeatherBookmark";
 import FeatherMoreVertical from "@/components/icons/FeatherMoreVertical";
 
 import Aside from "./Aside";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default {
   name: "Header",
@@ -68,17 +78,36 @@ export default {
     FeatherHash,
     FeatherBookmark,
     FeatherLogout,
+    LoadingSpinner,
 
     Aside,
   },
+  props: {
+    updatedUserProfile: {
+      type: Boolean,
+      required: true,
+    }
+  },
   data() {
     return {
+      username: localStorage.getItem("username"),
       avatar: localStorage.getItem("avatar"),
+      isLogout: false,
+    };
+  },
+  watch: {
+    updatedUserProfile: function () {
+      this.updateHeaderData()
     }
   },
   methods: {
+    updateHeaderData() {
+      this.username = localStorage.getItem("username")
+      this.avatar = localStorage.getItem("avatar")
+    },
     // user logout function
     async logout() {
+      this.isLogout = true;
       let access = localStorage.getItem("access_token");
       let refresh = localStorage.getItem("refresh_token");
 
@@ -104,12 +133,35 @@ export default {
       // set header auth to null, in order to
       // prevent user action after logout
       axiosInstance.defaults.headers["Authorization"] = null;
+      this.isLogout = false;
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
+.overlay {
+  z-index: 9999;
+  position: fixed;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  background-color: rgba(17, 17, 17, 0.8);
+  .inner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    .wrap {
+      color: #ccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column !important;
+    }
+  }
+}
 // header
 header {
   grid-column: span 3;

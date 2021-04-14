@@ -1,6 +1,12 @@
 <template>
+  <UserEditProfile
+    v-if="state.editProfile"
+    :username="state.userRequest.username"
+    @cancelEditProfile="cancelEditProfile"
+    @updatedUser="updatedUser"
+  />
   <div id="tweatter-app">
-    <Header />
+    <Header :updatedUserProfile="state.updatedProfile" />
     <section>
       <div class="section-top">
         <div class="top-return">
@@ -24,7 +30,7 @@
               </svg>
             </router-link>
           </span>
-          <h2 @click="goTop">{{state.userRequest.username}}</h2>
+          <h2 @click="goTop">{{ state.userRequest.username }}</h2>
         </div>
         <div class="top-left"><h2>T</h2></div>
       </div>
@@ -42,6 +48,7 @@
           <div
             class="btn-wrapper"
             v-if="state.user.username == state.thisRoute"
+            @click="editProfile"
           >
             <button>Edit profile</button>
           </div>
@@ -88,12 +95,14 @@ import axiosInstance from "@/plugin/axios";
 
 import Header from "@/components/headers/Header";
 import Sidebar from "@/components/headers/Sidebar";
+import UserEditProfile from "@/components/users/UserEditProfile";
 
 export default {
   name: "UserProfile",
   components: {
     Header,
     Sidebar,
+    UserEditProfile,
   },
   setup() {
     const route = useRoute();
@@ -102,13 +111,15 @@ export default {
         username: localStorage.getItem("username"),
         avatar: localStorage.getItem("avatar"),
       },
-      userRequest: Object,
       link: {
         tweat: `/${route.params.username}`,
         reply: `/${route.params.username}/replies`,
         media: `/${route.params.username}/medias`,
         likes: `/${route.params.username}/likes`,
       },
+      userRequest: Object,
+      editProfile: false,
+      updatedProfile: false,
       thisRoute: route.params.username,
       currentTab: route.fullPath.split("/").pop().toString(),
     });
@@ -120,10 +131,9 @@ export default {
       await axiosInstance({
         method: "GET",
         url: usernameUser,
-      })
-      .then((res) => {
+      }).then((res) => {
         state.userRequest = res.data.data;
-      })
+      });
     }
 
     return {
@@ -135,7 +145,7 @@ export default {
     $route(to) {
       this.state.currentTab = to.fullPath.split("/").pop().toString();
       if (to.params.username == localStorage.getItem("username")) {
-        this.state.thisRoute  = to.params.username;
+        this.state.thisRoute = to.params.username;
         this.state.link.tweat = `/${to.params.username}`;
         this.state.link.reply = `/${to.params.username}/replies`;
         this.state.link.media = `/${to.params.username}/medias`;
@@ -148,10 +158,19 @@ export default {
   methods: {
     goTop() {
       window.scrollTo(0, 0);
+    },
+    editProfile() {
+      this.state.editProfile = true;
+    },
+    cancelEditProfile() {
+      this.state.editProfile = false;
+    },
+    updatedUser() {
+      this.state.updatedProfile = true;
     }
   },
   async created() {
-    await this.fetchRequestedUser()
+    await this.fetchRequestedUser();
   },
 };
 </script>

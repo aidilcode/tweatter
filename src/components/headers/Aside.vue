@@ -40,6 +40,12 @@
 <script>
 export default {
   name: "Aside",
+  props: {
+    updatedUserProfile: {
+      type: Boolean,
+      required: true,
+    }
+  },
   data() {
     return {
       user: {
@@ -48,6 +54,18 @@ export default {
       },
     };
   },
+  watch: {
+    updatedUserProfile: function () {
+      this.updateHeaderData();
+    }
+  },
+  methods: {
+    updateHeaderData() {
+      this.user.username = localStorage.getItem("username");
+      this.user.avatar = localStorage.getItem("avatar");
+    },
+
+  }
 };
 </script>
 
