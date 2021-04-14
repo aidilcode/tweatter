@@ -166,6 +166,8 @@ export default {
       this.state.editProfile = false;
     },
     updatedUser() {
+      this.state.user.username = localStorage.getItem("username");
+      this.state.user.avatar = localStorage.getItem("avatar");
       this.state.updatedProfile = true;
     }
   },
