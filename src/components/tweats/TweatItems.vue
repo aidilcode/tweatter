@@ -320,8 +320,10 @@ export default {
   },
   watch: {
     fetchAgain: function () {
-      this.fetchTweats();
-      this.$emit("fetchedNewTweats");
+      if (this.fetchAgain) {
+        this.fetchTweats();
+        this.$emit("fetchedNewTweats");
+      }
     },
   },
   methods: {
