@@ -83,11 +83,11 @@
           </div>
           <div class="tweat-share">
             <span><FeatherShare /></span>
-            <div>1.7k</div>
+            <div></div>
           </div>
           <div class="tweat-hash">
             <span><FeatherHash /></span>
-            <div>400</div>
+            <div></div>
           </div>
         </div>
       </router-link>

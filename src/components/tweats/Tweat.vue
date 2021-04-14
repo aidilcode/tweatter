@@ -1,7 +1,10 @@
 <template>
   <section>
     <div class="section-top">
-      <div>
+      <div class="wrap-top">
+        <router-link :to="user.username" class="user-profile-top">
+          <img :src="user.avatar" alt="" width="40" height="40">
+        </router-link>
         <h2>
           <router-link to="/">Home</router-link>
         </h2>
@@ -27,6 +30,10 @@ export default {
     return {
       tweatUrl: "tweats/",
       fetchAgain: false,
+      user: {
+        username: localStorage.getItem("username"),
+        avatar: localStorage.getItem("avatar"),
+      }
     };
   },
   methods: {
@@ -61,6 +68,9 @@ section {
     justify-content: space-between;
     border-bottom: 1px solid #222;
     background: #111;
+    .user-profile-top {
+      display: none;
+    }
     h2 {
       font-size: 1.2em;
       font-weight: 600;

@@ -6,92 +6,29 @@
       </div>
       <ul class="nav-items">
         <li class="item active">
-          <a href="#">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="feather feather-grid"
-              data-v-4238a576=""
-            >
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-          </a>
+          <router-link to="/">
+            <FeatherGrid />
+          </router-link>
         </li>
         <li class="item">
-          <a href="#">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="feather feather-grid"
-              data-v-4238a576=""
-            >
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-          </a>
+          <router-link to="/">
+            <FeatherHash />
+          </router-link>
         </li>
         <li class="item">
-          <a href="#">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="feather feather-grid"
-              data-v-4238a576=""
-            >
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-          </a>
+          <router-link to="/">
+            <FeatherBookmark />
+          </router-link>
         </li>
         <li class="item">
-          <a href="#">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="feather feather-grid"
-              data-v-4238a576=""
-            >
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-          </a>
+          <router-link to="/">
+            <FeatherMoreVertical />
+          </router-link>
+        </li>
+        <li class="item item-logout">
+          <router-link to="/" @click="logout">
+            <FeatherLogout />
+          </router-link>
         </li>
       </ul>
       <div class="nav-bottom">
@@ -103,7 +40,9 @@
             height="35"
           />
         </div>
-        <div class="content" @click="logout">#</div>
+        <div class="content" @click="logout">
+          <span><FeatherLogout /></span>
+        </div>
       </div>
     </nav>
     <Aside />
@@ -113,11 +52,23 @@
 <script>
 import axiosInstance from "@/plugin/axios";
 
+import FeatherLogout from "@/components/icons/FeatherLogout";
+import FeatherGrid from "@/components/icons/FeatherGrid";
+import FeatherHash from "@/components/icons/FeatherHash";
+import FeatherBookmark from "@/components/icons/FeatherBookmark";
+import FeatherMoreVertical from "@/components/icons/FeatherMoreVertical";
+
 import Aside from "./Aside";
 
 export default {
   name: "Header",
   components: {
+    FeatherMoreVertical,
+    FeatherGrid,
+    FeatherHash,
+    FeatherBookmark,
+    FeatherLogout,
+
     Aside,
   },
   data() {
@@ -198,22 +149,25 @@ header {
         }
       }
       .item {
+        margin: 0.5rem 0 0.5rem 0;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: space-between;
         border-radius: 50%;
         a {
+          padding: 0.75rem;
           color: crimson;
           display: inline-block;
           border-radius: 50%;
-          padding: 1rem;
           color: #bbb;
           svg {
+            transform: scale(0.9);
             transition: 0.2s ease-in-out;
           }
         }
         &:hover {
+          transition: 0.2s ease-in-out;
           background: rgba(52, 211, 153, 0.1);
           svg {
             stroke: #34d399;
@@ -221,9 +175,12 @@ header {
           }
         }
       }
+      .item-logout {
+        display: none;
+      }
     }
     .nav-bottom {
-      margin: 0 0 2rem 0;
+      margin: 0 0 1rem 0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -232,9 +189,31 @@ header {
         display: none;
       }
       .content {
-        padding: 0.25rem 0.75rem 0.5rem 0.75rem;
+        margin-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
         border-radius: 50%;
-        background: #111;
+        span {
+          padding: 0.75rem;
+          display: inline-block;
+          border-radius: 50%;
+          color: #bbb;
+          cursor: pointer;
+          svg {
+            transform: scale(0.9);
+            transition: 0.2s ease-in-out;
+          }
+        }
+        &:hover {
+          transition: 0.2s ease-in-out;
+          background-color: rgba(155, 79, 94, 0.1);
+          svg {
+            stroke: crimson;
+            transition: 0.2s ease-in-out;
+          }
+        }
       }
     }
   }

@@ -175,7 +175,7 @@ body {
     bottom: 0;
     position: fixed !important;
     nav {
-      height: 3.5rem !important;
+      height: 4rem !important;
       display: flex;
       flex-direction: row !important;
       align-items: flex-end !important;
@@ -186,15 +186,47 @@ body {
         display: none !important;
       }
       .nav-items {
+        margin-bottom: 0.75rem;
         display: flex;
         flex-direction: row !important;
         align-items: center;
+        .item-logout {
+          padding: 0.4rem !important;
+          margin: 0 0.75rem 0 0.75rem !important;
+          display: inline-flex !important;
+          flex-direction: column;
+          align-items: center;
+          justify-content: space-between;
+          border-radius: 50%;
+          a {
+            padding: 0.75rem;
+            color: crimson;
+            display: inline-block;
+            border-radius: 50%;
+            color: #bbb;
+            svg {
+              transform: scale(0.8) !important;
+              transition: 0.2s ease-in-out;
+            }
+          }
+          &:hover {
+            transition: 0.2s ease-in-out;
+            background-color: rgba(155, 79, 94, 0.1) !important;
+            svg {
+              stroke: crimson !important;
+              transition: 0.2s ease-in-out;
+            }
+          }
+        }
         .item {
-          padding: 0.15rem;
-          margin: 0 1rem 0.5rem 1rem;
+          padding: 0.4rem !important;
+          margin: 0 0.75rem 0 0.75rem !important;
           a {
             color: crimson;
-            padding: 0.15rem 0.75rem 0.45rem 0.75rem !important;
+            padding: 0.15rem !important;
+            svg {
+              transform: scale(0.7);
+            }
           }
         }
       }
@@ -209,6 +241,22 @@ body {
   section {
     margin: 0 !important;
     grid-column: span 12 !important;
+    .section-top {
+      padding: 0.85rem 1.75rem 0.85rem 1.75rem !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+    .wrap-top {
+      display: flex;
+      align-items: center;
+      .user-profile-top {
+        margin-right: 1rem;
+        display: block !important;
+        img {
+          border-radius: 50% !important;
+        }
+      }
+    }
     .tweat:nth-last-child(1) {
       margin-bottom: 1rem !important;
     }
