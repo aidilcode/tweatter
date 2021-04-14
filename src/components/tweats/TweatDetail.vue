@@ -262,8 +262,8 @@ export default {
 
       // like
       if (!likedTw.classList.contains("liked")) {
-        if (numlike == "") numlike = 1;
-        else numlike = Number(likedTw.innerText) + 1;
+        if (counter.innerText == "") numlike = 1;
+        else numlike = Number(counter.innerText) + 1;
 
         counter.innerText = numlike;
       }
