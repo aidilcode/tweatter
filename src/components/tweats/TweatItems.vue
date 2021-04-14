@@ -321,6 +321,7 @@ export default {
   watch: {
     fetchAgain: function () {
       this.fetchTweats();
+      this.$emit("fetchedNewTweats");
     },
   },
   methods: {

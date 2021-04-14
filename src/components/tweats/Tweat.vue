@@ -9,7 +9,7 @@
       <div><h2>T</h2></div>
     </div>
     <TweatForms @createTweat="createdTweat" />
-    <TweatItems :tweatUrl="tweatUrl" :fetchAgain="fetchAgain" />
+    <TweatItems :tweatUrl="tweatUrl" :fetchAgain="fetchAgain" @fetchedNewTweats="fetched" />
   </section>
 </template>
 
@@ -32,6 +32,9 @@ export default {
   methods: {
     createdTweat() {
       this.fetchAgain = true;
+    },
+    fetched() {
+      this.fetchAgain = false;
     }
   }
 };
