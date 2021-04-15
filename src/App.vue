@@ -246,6 +246,9 @@ body {
       display: flex !important;
       align-items: center !important;
     }
+    .tabs {
+      border-top: 1px solid #222 !important;
+    }
     .wrap-top {
       display: flex;
       align-items: center;

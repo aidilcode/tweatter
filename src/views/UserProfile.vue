@@ -163,16 +163,14 @@ export default {
   watch: {
     $route(to) {
       this.state.currentTab = to.fullPath.split("/").pop().toString();
-      if (to.params.username === localStorage.getItem("username")) {
-        this.state.thisRoute = to.params.username;
-        this.state.link.tweat = `/${to.params.username}`;
-        this.state.link.reply = `/${to.params.username}/replies`;
-        this.state.link.media = `/${to.params.username}/medias`;
-        this.state.link.likes = `/${to.params.username}/likes`;
+      this.state.thisRoute = to.params.username;
+      this.state.link.tweat = `/${to.params.username}`;
+      this.state.link.reply = `/${to.params.username}/replies`;
+      this.state.link.media = `/${to.params.username}/medias`;
+      this.state.link.likes = `/${to.params.username}/likes`;
 
-        this.fetchRequestedUser(to.params.username);
-        this.state.key = to.params.username;
-      }
+      this.fetchRequestedUser(to.params.username);
+      this.state.key = to.params.username;
     },
   },
   methods: {
@@ -192,8 +190,6 @@ export default {
       this.state.userRequest.avatar = localStorage.getItem("avatar");
       this.state.updatedProfile = true;
 
-      // this.state.key = this.$route.fullPath;
-      console.log(this.$route.fullPath)
       this.state.key = this.$route.fullPath;
     },
   },

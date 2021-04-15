@@ -87,7 +87,6 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const isLogin = localStorage.getItem("isLogin")
-  console.log(isLogin)
   // check if the request route or url is required to login
   const rqLogin = to.matched.some(
     record => record.meta.requiredLogin

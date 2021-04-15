@@ -9,13 +9,13 @@
         </div>
       </div>
       <div class="inner" v-else>
-        <h1 class="sub text-6xl font-extrabold tracking-widest">
-          Content Information
-        </h1>
-        <h1 class="sub-tweat hidden text-6xl font-extrabold tracking-widest">
-          Tweatter
+        <h1 class="sub tracking-widest">
+          Join Tweatter
         </h1>
         <div class="wrap">
+          <h3 class="sub-text font-bold">
+            NOTE: Try to not use your real email, we (tweatter) are not provide some security on your information here!
+          </h3>
           <form
             @submit.prevent="loginTweat"
             class="signin"
@@ -27,6 +27,7 @@
               id="email"
               placeholder="me@gmail.com"
               v-model="inputEmail"
+              @focus="focused"
             />
             <input
               type="password"
@@ -34,6 +35,7 @@
               id="password"
               placeholder="************"
               v-model="inputPaswd"
+              @focus="focused"
             />
             <input
               type="username"
@@ -41,12 +43,16 @@
               id="username"
               placeholder="your username"
               v-model="inputUsername"
+              @focus="focused"
             />
+            <small class="info hidden" id="max-length">
+              max username length is 10.
+            </small>
             <div class="buttons">
               <button type="submit">
                 <span class="text-xl font-semibold">Join</span>
               </button>
-              <div>
+              <div class="bottom-button">
                 <a href="#">forgot password?</a>
                 <router-link to="/login">already have account?</router-link>
               </div>
@@ -85,7 +91,24 @@ export default {
     }
   },
   methods: {
+    focused() {
+      this.formError = false;
+      var mssg = document.getElementById("max-length");
+      if (!mssg.classList.contains("hidden")) {
+        mssg.classList.add("hidden");
+      }
+    },
     async loginTweat() {
+      if (!this.inputEmail || !this.inputUsername || !this.inputPaswd) {
+        this.formError = true;
+        return
+      }
+      if (this.inputUsername.length > 10) {
+        this.mssg = document.getElementById("max-length");
+        this.mssg.classList.toggle("hidden");
+        this.formError = true;
+        return
+      }
       this.sendData = true;
       const error = await axiosInstance
         .post('register/', {
@@ -119,7 +142,7 @@ export default {
 .image {
   overflow: hidden;
   position: relative;
-  background: url("../assets/images/pexels-photo-4252898.jpeg");
+  background: url("../assets/images/r-pexels-photo-4252898.jpg");
   background-size: cover;
   background-repeat: no-repeat;
   grid-column: span 6;
@@ -127,7 +150,7 @@ export default {
 .forms {
   font-family: "Montserrat", sans-serif;
   grid-column: span 6;
-  padding: 5rem;
+  padding: 2rem 5rem 2rem 5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -149,11 +172,26 @@ export default {
   }
   .inner {
     color: #ddd;
+    .hidden {
+      display: none;
+    }
+    .sub {
+      font-size: 3.75rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+    }
     .wrap {
       margin-top: 4rem;
+      .sub-text {
+        font-size: 0.9rem;
+      }
       .signin {
         display: flex;
         flex-direction: column;
+        .info {
+          margin-top: 0.2rem;
+          color: crimson;
+        }
         input {
           font-size: 1.1em;
           padding: 1rem;
@@ -236,19 +274,14 @@ export default {
 }
 @media only screen and (max-width: 480px) {
   .forms {
-    padding: 1rem !important;
+    padding: 2rem !important;
     .inner {
       .sub {
-        display: none !important;
+        font-size: 3em !important;
       }
       .sub-tweat {
-        font-size: 4em !important;
+        font-size: 0.9em !important;
         display: block !important;
-      }
-      .wrap {
-        h3 {
-          font-size: 1.5em !important;
-        }
       }
     }
   }
@@ -264,6 +297,11 @@ export default {
     .buttons {
       div > a {
         font-size: 0.9em;
+      }
+      .bottom-button {
+        display: flex;
+        justify-content: space-between;
+        text-align: center;
       }
     }
   }

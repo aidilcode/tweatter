@@ -9,14 +9,13 @@
         </div>
       </div>
       <div class="inner" v-else>
-        <h1 class="sub text-6xl font-extrabold tracking-widest">
+        <h1 class="sub tracking-widest">
           Content Information
         </h1>
-        <h1 class="sub-tweat hidden text-6xl font-extrabold tracking-widest">
+        <h1 class="sub-tweat hidden">
           Tweatter
         </h1>
         <div class="wrap">
-          <h3 class="text-3xl font-bold">Join Tweatter Today</h3>
           <form
             @submit.prevent="loginTweat"
             class="signin"
@@ -117,7 +116,7 @@ export default {
 .image {
   overflow: hidden;
   position: relative;
-  background: url("../assets/images/pexels-photo-4252898.jpeg");
+  background: url("../assets/images/r-pexels-photo-4252898.jpg");
   background-size: cover;
   background-repeat: no-repeat;
   grid-column: span 6;
@@ -125,7 +124,7 @@ export default {
 .forms {
   font-family: "Montserrat", sans-serif;
   grid-column: span 6;
-  padding: 5rem;
+  padding: 2rem 5rem 2rem 5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -147,8 +146,20 @@ export default {
   }
   .inner {
     color: #ddd;
+    .hidden {
+      display: none;
+    }
+    .sub {
+      font-size: 3.75rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+    }
     .wrap {
       margin-top: 6rem;
+      .sub-text {
+        font-size: 1.875rem;
+        line-height: 2.25rem;
+      }
       .signin {
         display: flex;
         flex-direction: column;
@@ -196,9 +207,6 @@ export default {
     color: crimson;
   }
 }
-.hidden {
-  display: hidden;
-}
 
 // media queries
 @media only screen and (max-width: 1000px) {
@@ -241,6 +249,8 @@ export default {
         display: none !important;
       }
       .sub-tweat {
+        font-weight: 800;
+        letter-spacing: 0.1em;
         font-size: 4em !important;
         display: block !important;
       }
