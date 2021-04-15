@@ -38,6 +38,7 @@
         <div class="background-cover"></div>
         <div class="user-avatar">
           <img
+            v-if="state.userRequest.avatar"
             :src="state.userRequest.avatar"
             alt=""
             width="140"
@@ -144,10 +145,25 @@ export default {
       fetchRequestedUser,
     };
   },
+  async created() {
+    await this.fetchRequestedUser();
+  },
+  mounted() {
+    var vm = this;
+    routes.beforeEach((to, from, next) => {
+      // to and from are both route objects. must call `next`.
+      if (to.matched.some(record => record.meta.reuse === false)) {
+        vm.state.key = to.path
+      } else {
+        vm.state.key = null
+      }
+      next()
+    })
+  },
   watch: {
     $route(to) {
       this.state.currentTab = to.fullPath.split("/").pop().toString();
-      if (to.params.username == localStorage.getItem("username")) {
+      if (to.params.username === localStorage.getItem("username")) {
         this.state.thisRoute = to.params.username;
         this.state.link.tweat = `/${to.params.username}`;
         this.state.link.reply = `/${to.params.username}/replies`;
@@ -155,6 +171,7 @@ export default {
         this.state.link.likes = `/${to.params.username}/likes`;
 
         this.fetchRequestedUser(to.params.username);
+        this.state.key = to.params.username;
       }
     },
   },
@@ -180,21 +197,6 @@ export default {
       this.state.key = this.$route.fullPath;
     },
   },
-  async created() {
-    await this.fetchRequestedUser();
-  },
-  mounted() {
-    var vm = this;
-    routes.beforeEach((to, from, next) => {
-      // to and from are both route objects. must call `next`.
-      if (to.matched.some(record => record.meta.reuse === false)) {
-        vm.state.key = to.path
-      } else {
-        vm.state.key = null
-      }
-      next()
-    })
-  }
 };
 </script>
 
@@ -272,6 +274,8 @@ section {
       position: absolute;
       top: 13rem;
       img {
+        width: 140px;
+        height: 140px;
         border: 3px solid rgb(15, 15, 15);
         border-radius: 50%;
       }

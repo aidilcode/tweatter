@@ -130,6 +130,7 @@ export default {
       localStorage.removeItem("refresh_token");
       localStorage.removeItem("username");
       localStorage.removeItem("avatar");
+      localStorage.removeItem("isLogin");
       // set header auth to null, in order to
       // prevent user action after logout
       axiosInstance.defaults.headers["Authorization"] = null;

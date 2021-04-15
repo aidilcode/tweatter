@@ -16,8 +16,7 @@
         </div>
         <div class="about">
           <small
-            >Lorem ipsum dolor sit amet, consectetur adipisicing elit. Optio
-            autem culpa atque.</small
+            >{{ user.bio }}</small
           >
         </div>
       </div>
@@ -38,6 +37,8 @@
 </template>
 
 <script>
+import axiosInstance from "@/plugin/axios";
+
 export default {
   name: "Aside",
   props: {
@@ -51,20 +52,31 @@ export default {
       user: {
         username: localStorage.getItem("username"),
         avatar: localStorage.getItem("avatar"),
+        bio: "",
       },
     };
   },
   watch: {
     updatedUserProfile: function () {
-      this.updateHeaderData();
+      this.fetchRequestedUser();
     }
   },
   methods: {
-    updateHeaderData() {
-      this.user.username = localStorage.getItem("username");
-      this.user.avatar = localStorage.getItem("avatar");
-    },
+    async fetchRequestedUser() {
+      let requestsUser = localStorage.getItem("username");
 
+      await axiosInstance({
+        method: "GET",
+        url: requestsUser,
+      }).then((res) => {
+        this.user.username = res.data.data.username;
+        this.user.avatar = res.data.data.avatar;
+        this.user.bio = res.data.data.bio;
+      });
+    }
+  },
+  created() {
+    this.fetchRequestedUser();
   }
 };
 </script>

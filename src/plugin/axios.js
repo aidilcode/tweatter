@@ -22,16 +22,6 @@ axiosInstance.interceptors.response.use(
     // get the response error
     const originalRequest = error.config;
 
-    // error response is undefined
-    if (typeof error.response == 'undefined') {
-      alert(
-        'A server/network error occurred. ' +
-        'Looks like CORS might be the problem. ' +
-        'Sorry about this - we will get it fixed shortly.'
-      );
-      return Promise.reject(error);
-    }
-
     // error response is unauthorized
     if (
       error.response.status === 401
@@ -95,6 +85,16 @@ axiosInstance.interceptors.response.use(
         alert('Token not available');
         window.location.href = '/login/';
       }
+    }
+
+    // error response is undefined
+    if (typeof error.response == 'undefined') {
+      alert(
+        'A server/network error occurred. ' +
+        'Looks like CORS might be the problem. ' +
+        'Sorry about this - we will get it fixed shortly.'
+      );
+      return Promise.reject(error);
     }
 
   // specific error handling done elsewhere

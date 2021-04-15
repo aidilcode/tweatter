@@ -411,6 +411,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.tweatters-wrapper {
+  overflow-x: hidden !important;
+}
 .tweat {
   margin-top: 1rem;
   cursor: pointer;
