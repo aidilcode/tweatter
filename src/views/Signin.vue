@@ -192,6 +192,7 @@ export default {
             align-items: center;
             color: rgba(59, 130, 246, 1);
             a {
+              padding: 0.75rem 1rem 0.75rem 1rem;
               margin: 0 0.5rem 0 0.5rem;
             }
           }
