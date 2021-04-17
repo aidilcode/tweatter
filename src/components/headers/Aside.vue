@@ -143,6 +143,10 @@ aside {
           margin-bottom: 1rem !important;
         }
       }
+      .videos-wrapper::-webkit-scrollbar {
+        width: 0 !important;
+        background: #222;
+      }
     }
   }
 }

@@ -20,6 +20,16 @@ html {
   scrollbar-color: #ddd #222;
 }
 
+html::-webkit-scrollbar {
+  width: 5px !important;
+  background: #222;
+}
+
+html::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border: 3px solid #ddd;
+}
+
 body {
   color: #bbb;
   background: #111;

@@ -1,11 +1,17 @@
 <template>
-  <div class="section-form" :class="{ tweating: state.forms.isSubmit }">
+  <div
+    class="section-form"
+    :class="[
+      { tweating: state.forms.isSubmit },
+      { stateError: state.forms.error },
+    ]"
+  >
     <form
       class="create-tweat"
       @submit.prevent="postNewTweat"
       :class="{ exceeded: newTweatCharCount > 255 }"
     >
-      <div class="form" :class="{empty: newTweatCharCount < 1}">
+      <div class="form" :class="{ empty: newTweatCharCount < 1 }">
         <contenteditable
           id="content-form"
           data-placeholder="What is Happening?"
@@ -15,8 +21,19 @@
           :noNL="false"
           :noHTML="false"
         />
-        <input type="file" id="image" ref="image" @change="getImgeContent($event)">
-        <div class="image-wrapper" :class="{emptyImage: !state.getImageContent}">
+        <input
+          type="file"
+          id="image"
+          ref="image"
+          @change="getImgeContent($event)"
+        />
+        <div v-if="state.forms.error">
+          <small>{{ state.forms.messg }}</small>
+        </div>
+        <div
+          class="image-wrapper"
+          :class="{ emptyImage: !state.getImageContent }"
+        >
           <div class="close">
             <span><FeatherClose @click="closeImageContent" /></span>
           </div>
@@ -25,7 +42,9 @@
       </div>
       <div class="divider"></div>
       <div class="tools">
-        <div><label for="image"><FeatherImage /></label></div>
+        <div>
+          <label for="image"><FeatherImage /></label>
+        </div>
         <button class="btn-tweat" type="submit">Tweat</button>
       </div>
     </form>
@@ -45,7 +64,7 @@ export default {
   components: {
     contenteditable,
     FeatherImage,
-    FeatherClose
+    FeatherClose,
   },
   setup() {
     // state
@@ -79,12 +98,15 @@ export default {
       this.state.getImageContent = false;
       this.state.newImageContent = "";
       this.$refs.tweatImage.src = "#";
+
+      this.state.forms.error = false;
+      this.state.forms.messg = "";
     },
     async postNewTweat() {
       this.state.forms.isSubmit = true;
       const tweat = document.getElementById("content-form").innerText;
       if (this.state.newImageContent == "" && tweat == "") {
-        return
+        return;
       }
 
       const formData = new FormData();
@@ -99,14 +121,21 @@ export default {
           "Content-Type": "application/json;charset=UTF-8",
         },
       })
-      .then(() => {
-        this.state.newTweatContent = "";
-        this.state.newImageContent = "";
-        this.$refs.tweatImage.src  = "#";
-        this.state.forms.isSubmit  = false;
-        this.state.getImageContent = false;
-        this.$emit("createTweat");
-      });
+        .then(() => {
+          this.state.newTweatContent = "";
+          this.state.newImageContent = "";
+          this.$refs.tweatImage.src = "#";
+          this.state.forms.isSubmit = false;
+          this.state.getImageContent = false;
+          this.$emit("createTweat");
+        })
+        .catch((err) => {
+          this.state.forms.isSubmit = false;
+          if (err.response.data.includes("_io.BufferedRandom")) {
+            this.state.forms.error = true;
+            this.state.forms.messg = "max uploaded image is 2.4 Mb";
+          }
+        });
     },
   },
 };
@@ -133,6 +162,28 @@ export default {
     }
     100% {
       opacity: 0.9;
+    }
+  }
+}
+.stateError {
+  border: 1px solid rgb(141, 12, 38) !important;
+  border-color: rgb(141, 12, 38) !important;
+  color: rgb(141, 12, 38) !important;
+  div[contenteditable="true"] {
+    &:focus {
+      color: rgb(141, 12, 38) !important;
+      outline: none !important;
+      border-color: rgb(141, 12, 38) !important;
+    }
+  }
+  .state-error {
+    color: crimson !important;
+  }
+  .btn-tweat {
+    color: #fff;
+    background: rgb(141, 12, 38) !important;
+    &:hover {
+      background: rgba(220, 20, 60, 0.5) !important;
     }
   }
 }

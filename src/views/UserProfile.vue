@@ -299,9 +299,9 @@ section {
   }
   .tabs {
     height: 60px;
-    top: 3.8625rem !important;
+    top: 3.6rem !important;
     position: sticky !important;
-    z-index: 999;
+    z-index: 990;
     background: #111;
     border-bottom: 1px solid #222;
     .wrapper {
