@@ -48,9 +48,7 @@
           </object>
         </div>
         <div class="tweat-content">
-          <div>
-            {{ tweat.tweat }}
-          </div>
+          <div v-html="linkOnString(tweat.tweat)" class="tw-content"></div>
           <div v-if="tweat.picture_url" class="image">
             <img :src="tweat.picture_url" alt="" srcset="" />
           </div>
@@ -390,6 +388,26 @@ export default {
       this.repliedTo = "";
       this.tweatContent = "";
       this.tweatId = "";
+    },
+    linkOnString(str) {
+      var tweat = str;
+      var replace;
+      var anchors = tweat.match(/(?:www|https?)[^\s]+/gi);
+
+      if (!anchors) return tweat;
+
+      for (var i = 0; i < anchors.length; i++) {
+        replace = `<a href='${anchors[i]}' target='_blank' rel='noopener noreferrer' style='color: #5b5bf1;'>${anchors[i]}</a>`;
+
+        if (!tweat.includes(replace)) {
+          tweat = tweat.replaceAll(
+            anchors[i],
+            replace
+          );
+        }
+      }
+
+      return `${tweat}`;
     },
   },
   async created() {

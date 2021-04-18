@@ -71,9 +71,7 @@
             </object>
           </div>
           <div class="tweat-content">
-            <div>
-              {{ state.tweats.tweat }}
-            </div>
+            <div v-html="linkOnString(state.tweats.tweat)" class="tw-content"></div>
             <div v-if="state.tweats.picture_url" class="image">
               <img :src="state.tweats.picture_url" alt="" srcset="" />
             </div>
@@ -102,11 +100,11 @@
             </div>
             <div class="tweat-share">
               <span><FeatherShare /></span>
-              <div>1.7k</div>
+              <div></div>
             </div>
             <div class="tweat-hash">
               <span><FeatherHash /></span>
-              <div>400</div>
+              <div></div>
             </div>
           </div>
         </div>
@@ -367,6 +365,26 @@ export default {
       this.tweatContent = "";
       this.tweatId = "";
     },
+    linkOnString(str) {
+      var tweat = str;
+      var replace;
+      var anchors = tweat.match(/(?:www|https?)[^\s]+/gi);
+
+      if (!anchors) return tweat;
+
+      for (var i = 0; i < anchors.length; i++) {
+        replace = `<a href='${anchors[i]}' target='_blank' rel='noopener noreferrer' style='color: #5b5bf1;'>${anchors[i]}</a>`;
+
+        if (!tweat.includes(replace)) {
+          tweat = tweat.replaceAll(
+            anchors[i],
+            replace
+          );
+        }
+      }
+
+      return `${tweat}`;
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -440,7 +458,6 @@ section {
 .tweat {
   margin-top: 1rem;
   margin-bottom: 2rem;
-  cursor: pointer;
   border-top: 1px solid #222;
   transition: 0.2s ease-in-out;
   background: rgb(18, 18, 18);
@@ -588,10 +605,6 @@ section {
         color: rgb(91, 91, 241);
       }
     }
-  }
-  &:hover {
-    transition: 0.2s ease-in-out;
-    background-color: rgb(15, 15, 15);
   }
   .user-comment-detail {
   width: 100%;
