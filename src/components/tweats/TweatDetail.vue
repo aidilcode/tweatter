@@ -366,20 +366,24 @@ export default {
       this.tweatId = "";
     },
     linkOnString(str) {
+      var replace, regex, temporary;
       var tweat = str;
-      var replace;
       var anchors = tweat.match(/(?:www|https?)[^\s]+/gi);
 
       if (!anchors) return tweat;
 
       for (var i = 0; i < anchors.length; i++) {
+        anchors[i] = anchors[i].replace(/\.*$/, "");
+        temporary = anchors[i].replace("/", "\\/");
+        temporary = anchors[i].replace(/\.*$/, "");
+        temporary += "\\b";
+        // set the regexp 'g' (global) to true, needed when using replaceAll
+        // on string manipulation
+        regex = new RegExp(temporary, 'g');
         replace = `<a href='${anchors[i]}' target='_blank' rel='noopener noreferrer' style='color: #5b5bf1;'>${anchors[i]}</a>`;
 
-        if (!tweat.includes(replace)) {
-          tweat = tweat.replaceAll(
-            anchors[i],
-            replace
-          );
+        if (tweat.match(regex) && !tweat.match(replace)) {
+          tweat = tweat.replaceAll(regex, replace);
         }
       }
 
