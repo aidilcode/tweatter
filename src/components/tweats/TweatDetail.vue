@@ -1,4 +1,9 @@
 <template>
+  <div class="zooming" v-if="zooms" @click="closeZoom">
+    <div class="wrapper">
+      <img src="#" alt="" ref="zoom">
+    </div>
+  </div>
   <section>
     <div class="section-top">
       <div class="top-return">
@@ -73,7 +78,7 @@
           <div class="tweat-content">
             <div v-html="linkOnString(state.tweats.tweat)" class="tw-content"></div>
             <div v-if="state.tweats.picture_url" class="image">
-              <img :src="state.tweats.picture_url" alt="" srcset="" />
+              <img :src="state.tweats.picture_url" alt="" srcset="" @click="zoomImage($event)" />
             </div>
           </div>
           <div class="tweat-repr">
@@ -204,6 +209,7 @@ export default {
       tweatId: "",
       counts: 0,
       prevRoute: "/",
+      zooms: false,
     };
   },
   setup() {
@@ -365,6 +371,18 @@ export default {
       this.tweatContent = "";
       this.tweatId = "";
     },
+    zoomImage(event) {
+      this.zooms = true;
+      this.$nextTick(() => {
+        this.$refs.zoom.src = event.target.src
+      })
+    },
+    closeZoom() {
+      this.$nextTick(() => {
+        this.$refs.zoom.src = "";
+      })
+      this.zooms = false;
+    },
     linkOnString(str) {
       var replace, regex, temporary;
       var tweat = str;
@@ -399,6 +417,29 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.zooming {
+  z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  background-color: rgba(17, 17, 17, 0.9);
+  .wrapper {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    img {
+      max-width: 100vw !important;
+      height: 80vh !important;
+      border-radius: 4px;
+      box-shadow: 0 3px 4px rgba(0, 0, 0, 0.25);
+    }
+  }
+}
 section {
   grid-column: span 6;
 }
@@ -543,6 +584,7 @@ section {
       font-size: 0.955em;
     }
     .image {
+      cursor: pointer;
       max-height: 500px !important;
       overflow: hidden;
       border-radius: 4px;
