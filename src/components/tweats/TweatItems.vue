@@ -6,6 +6,11 @@
     :tweat="tweatContent"
     @closeComment="closedComment"
   />
+  <div v-if="searching" class="searched-count">
+    <div class="wrapper">
+      We found <span>{{state.counts}}</span> similar tweat in our server
+    </div>
+  </div>
   <div class="tweatters-wrapper">
     <div class="tweat" v-for="tweat in state.tweats" :key="tweat.id">
       <router-link
@@ -200,6 +205,10 @@ export default {
       type: Boolean,
       required: false,
     },
+    searching: {
+      type: Boolean,
+      required: false,
+    }
   },
   data() {
     return {
@@ -218,13 +227,14 @@ export default {
         avatar: localStorage.getItem("avatar_url"),
       },
       status: {
-        pause: Date.now() + 1000,
+        pause: Date.now() + 2000,
         next: "next",
         mssg: "Looks like you've reach the end of the page.",
       },
       fetchUrl: "",
       access: localStorage.getItem("access_token"),
       tweats: [],
+      counts: 0,
       loading: false,
     });
 
@@ -244,7 +254,9 @@ export default {
         .then((res) => {
           state.status.next = res.data.next;
           state.tweats = res.data.results;
+          state.counts = res.data.count;
           state.loading = false;
+          state.status.pause = Date.now() + 2000; // 2 seconds
         })
         .catch(() => {
           state.loading = false;
@@ -310,7 +322,6 @@ export default {
       if (response.status == 401)
         alert("You are not unauthorized to use this action.");
       if (response.status == 204) {
-        console.log(state.fetchUrl);
         await this.fetchTweats(state.fetchUrl);
       }
     }
@@ -324,7 +335,7 @@ export default {
       this.state.loading = false;
       if (!response || response.status == 400) return;
 
-      this.state.status.pause = Date.now() + 1000; // 1 seconds
+      this.state.status.pause = Date.now() + 2000; // 2 seconds
       this.state.tweats.push(...response.data.results);
       this.state.status.next = response.data.next;
     }
@@ -379,7 +390,6 @@ export default {
     closedComment(replied) {
       if (replied) {
         var counts = document.getElementById("comment-" + this.tweatId);
-        console.info(counts.innerText == "");
         counts.innerText =
           counts.innerText == "" ? 1 : Number(counts.innerText) + 1;
       }
@@ -433,6 +443,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.searched-count {
+  top: 0;
+  position: sticky;
+  font-size: 1.25em;
+  font-weight: 600;
+  padding: 1.5rem;
+  background: #111;
+  border-bottom: 1px solid #222;
+  z-index: 999;
+  span {
+    color: #34d399;
+  }
+}
 .tweatters-wrapper {
   overflow-x: hidden !important;
 }

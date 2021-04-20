@@ -2,7 +2,12 @@
   <aside class="sidebar">
     <div class="sidebar-wrapper">
       <div class="search-bar">
-        <span>search</span>
+        <input
+          type="text"
+          placeholder="Search"
+          v-model="query"
+          @keyup.enter="searchTweat"
+        />
       </div>
       <div class="trending-bar">
         <h2>Treding for you</h2>
@@ -36,8 +41,18 @@
 
 <script>
 export default {
-  name: "Sidebar"
-}
+  name: "Sidebar",
+  data() {
+    return {
+      query: "",
+    };
+  },
+  methods: {
+    searchTweat() {
+      this.$router.push(`/search/tweats/?q=${this.query}`);
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -51,11 +66,15 @@ export default {
     position: sticky;
     margin: 1rem 1rem 0 0;
     .search-bar {
+      input[type="text"] {
+        padding: 0.75rem 1rem 1rem 1rem;
+        width: 100%;
+        background: #111;
+        border: 1px solid #222;
+        border-radius: 4px;
+      }
       margin-bottom: 1rem;
-      padding: 0.75rem 1rem 1rem 1rem;
       width: 100%;
-      border: 1px solid #222;
-      border-radius: 4px;
     }
     .trending-bar {
       width: 100%;

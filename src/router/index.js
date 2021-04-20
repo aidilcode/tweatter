@@ -9,6 +9,7 @@ import UserProfile from "@/views/UserProfile";
 // components
 import Tweat from "@/components/tweats/Tweat";
 import TweatDetail from "@/components/tweats/TweatDetail";
+import TweatSearch from "@/components/tweats/TweatSearch";
 import UserTweat from "@/components/users/UserTweat";
 import UserMedia from "@/components/users/UserMedia";
 import UserLikes from "@/components/users/UserLikes";
@@ -42,6 +43,12 @@ const routes = [
         path: ":username/tweat/:id",
         name: "TweatDetail",
         component: TweatDetail,
+        meta: {requiredLogin: true},
+      },
+      {
+        path: "search/tweats/",
+        name: "TweatSearch",
+        component: TweatSearch,
         meta: {requiredLogin: true},
       }
     ],

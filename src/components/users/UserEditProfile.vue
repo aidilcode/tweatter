@@ -96,7 +96,6 @@ export default {
       let formData = new FormData();
 
       if (this.changes.avatars) {
-        console.log("edit avatar")
         formData.append("avatar", this.changes.avatars);
       }
       formData.append("bio", this.changes.bio);
